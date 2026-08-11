@@ -353,7 +353,7 @@ const OrganizationsList: React.FC = () => {
               </h4>
               {editingDomain ? (
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                  <input style={inp} value={domainInput} onChange={e => setDomainInput(e.target.value)} placeholder="e.g. springfield.zyron.io" />
+                  <input style={inp} value={domainInput} onChange={e => setDomainInput(e.target.value)} placeholder="e.g. springfield.edminz.io" />
                   <button className="btn btn-primary" style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }} onClick={handleSaveDomain} disabled={savingDomain}>
                     {savingDomain ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={14} />} Save
                   </button>
@@ -369,7 +369,7 @@ const OrganizationsList: React.FC = () => {
                 </div>
               )}
               <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Used for white-label routing and email domain validation. E.g. <code style={{ backgroundColor: 'rgba(255,255,255,0.07)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>school.zyron.io</code>
+                Used for white-label routing and email domain validation. E.g. <code style={{ backgroundColor: 'rgba(255,255,255,0.07)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>school.edminz.io</code>
               </p>
             </div>
 

@@ -80,7 +80,7 @@ const DashboardLayout: React.FC = () => {
             <Menu size={24} />
           </button>
           <Link to="/dashboard" style={{ fontWeight: 600, color: 'inherit', textDecoration: 'none' }}>
-            {user?.organization?.name || 'Zyron'}
+            {user?.organization?.name || 'Edminz'}
           </Link>
         </div>
       </div>
@@ -214,7 +214,7 @@ const DashboardLayout: React.FC = () => {
             </div>
           </div>
         )}
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', flex: 1 }}>
+        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', flex: 1, padding: 'max(1rem, var(--spacing-lg))' }}>
           <Outlet />
         </div>
       </main>

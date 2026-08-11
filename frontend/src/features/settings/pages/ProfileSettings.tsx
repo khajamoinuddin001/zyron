@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Save, Loader2, AlertCircle, CheckCircle, Eye, EyeOff, Palette } from 'lucide-react';
+import { Lock, Save, Loader2, AlertCircle, CheckCircle, Eye, EyeOff, Palette, User } from 'lucide-react';
 import { api } from '../../../services/api';
 import { THEMES, applyTheme } from './OrgSettings';
 import { useAuthStore } from '../../../store/auth.store';
@@ -20,6 +20,21 @@ const ProfileSettings: React.FC = () => {
   const [selectedThemeMode, setSelectedThemeMode] = useState('dark');
   const [themeSaving, setThemeSaving] = useState(false);
   const [themeMsg, setThemeMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Personal Info state
+  const [firstName, setFirstName] = useState(user?.firstName || '');
+  const [lastName, setLastName] = useState(user?.lastName || '');
+  const [infoSaving, setInfoSaving] = useState(false);
+  const [infoMsg, setInfoMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  React.useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || '');
+      setLastName(user.lastName || '');
+    }
+  }, [user]);
+
+  const hasNameChanged = firstName !== (user?.firstName || '') || lastName !== (user?.lastName || '');
 
   React.useEffect(() => {
     if (user) {
@@ -45,6 +60,22 @@ const ProfileSettings: React.FC = () => {
       setThemeMsg({ type: 'error', text: err.message || 'Failed to save theme.' });
     } finally {
       setThemeSaving(false);
+    }
+  };
+
+  const handleInfoSave = async () => {
+    setInfoSaving(true);
+    setInfoMsg(null);
+    try {
+      await api.patch('/auth/profile', { firstName, lastName });
+      if (user) {
+        setUser({ ...user, firstName, lastName });
+      }
+      setInfoMsg({ type: 'success', text: 'Personal info updated successfully!' });
+    } catch (err: any) {
+      setInfoMsg({ type: 'error', text: err.message || 'Failed to update personal info.' });
+    } finally {
+      setInfoSaving(false);
     }
   };
 
@@ -129,6 +160,101 @@ const ProfileSettings: React.FC = () => {
         </p>
       </div>
 
+      {/* ── Personal Info ── */}
+      <div style={sectionStyle}>
+        <div style={{ ...sectionHeaderStyle, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ padding: '0.6rem', backgroundColor: 'rgba(59, 130, 246, 0.15)', borderRadius: '10px' }}>
+              <User size={20} color="#3b82f6" />
+            </div>
+            <div>
+              <h3 style={{ margin: 0 }}>Personal Information</h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Your basic account details</p>
+            </div>
+          </div>
+        </div>
+
+        {infoMsg && <Alert msg={infoMsg} />}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>First Name</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                style={inputStyle}
+                placeholder="First Name"
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Last Name</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                style={inputStyle}
+                placeholder="Last Name"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Email Address</label>
+            <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.95rem', cursor: 'not-allowed' }}>
+              {user?.email}
+            </div>
+          </div>
+          {user?.mobile && (
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Mobile Number</label>
+              <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.95rem', cursor: 'not-allowed' }}>
+                {user.mobile}
+              </div>
+            </div>
+          )}
+
+          {hasNameChanged && (
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <button
+                onClick={handleInfoSave}
+                disabled={infoSaving || !firstName.trim()}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  padding: '0.6rem 1.2rem',
+                  backgroundColor: 'var(--primary)', color: 'white',
+                  border: 'none', borderRadius: '8px',
+                  fontWeight: 500, cursor: (infoSaving || !firstName.trim()) ? 'not-allowed' : 'pointer',
+                  opacity: (infoSaving || !firstName.trim()) ? 0.7 : 1,
+                  fontSize: '0.9rem'
+                }}
+              >
+                {infoSaving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
+                Save Changes
+              </button>
+              <button
+                onClick={() => {
+                  setFirstName(user?.firstName || '');
+                  setLastName(user?.lastName || '');
+                  setInfoMsg(null);
+                }}
+                disabled={infoSaving}
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  backgroundColor: 'transparent', color: 'var(--text-main)',
+                  border: '1px solid var(--border-light)', borderRadius: '8px',
+                  fontWeight: 500, cursor: infoSaving ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* ── Theme ── */}
       <div style={sectionStyle}>
         <div style={sectionHeaderStyle}>
@@ -143,28 +269,6 @@ const ProfileSettings: React.FC = () => {
 
         {themeMsg && <Alert msg={themeMsg} />}
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          {THEMES.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setSelectedThemeColor(t.key)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                padding: '0.6rem 1rem',
-                borderRadius: '10px',
-                border: selectedThemeColor === t.key ? `2px solid ${t.primary}` : '2px solid transparent',
-                backgroundColor: selectedThemeColor === t.key ? `${t.primary}22` : 'rgba(255,255,255,0.03)',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              <div style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: t.primary, flexShrink: 0 }} />
-              <span style={{ fontSize: '0.9rem', color: selectedThemeColor === t.key ? t.primary : 'var(--text-muted)', fontWeight: selectedThemeColor === t.key ? 600 : 400 }}>
-                {t.label}
-              </span>
-            </button>
-          ))}
-        </div>
 
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Appearance Mode</label>

@@ -10,7 +10,8 @@ import {
   Package, 
   Home, 
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
@@ -26,14 +27,14 @@ const LandingPage: React.FC = () => {
   }, []);
 
   const features = [
-    { icon: <Users size={24} />, title: 'Attendance', desc: 'Real-time biometric & manual attendance tracking.' },
-    { icon: <MessageSquare size={24} />, title: 'Messaging', desc: 'Secure communication between staff, students & parents.' },
-    { icon: <CreditCard size={24} />, title: 'Accounts & Fees', desc: 'Automated fee collection, invoicing, and payroll.' },
-    { icon: <Calendar size={24} />, title: 'Examinations', desc: 'Generate report cards, hall tickets, and schedules.' },
-    { icon: <BookOpen size={24} />, title: 'Library', desc: 'Complete library management with barcode support.' },
-    { icon: <Truck size={24} />, title: 'Transport', desc: 'GPS tracking and route management for transport fleets.' },
-    { icon: <Package size={24} />, title: 'Inventory', desc: 'Track assets, supplies, and orders automatically.' },
-    { icon: <Home size={24} />, title: 'Hostel', desc: 'Manage room allocations, mess, and visitors easily.' }
+    { icon: <Users size={28} />, title: 'Attendance', desc: 'Real-time biometric & manual attendance tracking.', className: 'bento-large' },
+    { icon: <MessageSquare size={28} />, title: 'Messaging', desc: 'Secure communication between staff, students & parents.', className: '' },
+    { icon: <CreditCard size={28} />, title: 'Accounts & Fees', desc: 'Automated fee collection, invoicing, and payroll.', className: '' },
+    { icon: <Calendar size={28} />, title: 'Examinations', desc: 'Generate report cards, hall tickets, and schedules.', className: 'bento-wide' },
+    { icon: <BookOpen size={28} />, title: 'Library', desc: 'Complete library management with barcode support.', className: '' },
+    { icon: <Truck size={28} />, title: 'Transport', desc: 'GPS tracking and route management for transport fleets.', className: '' },
+    { icon: <Package size={28} />, title: 'Inventory', desc: 'Track assets, supplies, and orders automatically.', className: 'bento-wide' },
+    { icon: <Home size={28} />, title: 'Hostel', desc: 'Manage room allocations, mess, and visitors easily.', className: '' }
   ];
 
   return (
@@ -42,7 +43,7 @@ const LandingPage: React.FC = () => {
         <div className="container navbar-container">
           <div className="logo">
             <div className="logo-icon"><ShieldCheck size={28} /></div>
-            Zyron
+            Edminz
           </div>
           <div className="nav-links">
             <a href="#features" className="nav-link">Features</a>
@@ -59,11 +60,14 @@ const LandingPage: React.FC = () => {
       <section className="hero-section">
         <div className="hero-bg-glow"></div>
         <div className="container hero-content animate-float">
+          <div className="badge">
+            <span className="badge-highlight">New</span> Edminz v2.0 is now live
+          </div>
           <h1 className="hero-title">
             The Ultimate Business OS for <span className="text-gradient">Modern Organizations</span>
           </h1>
           <p className="hero-subtitle">
-            Zyron unifies your attendance, messaging, accounts, and 12+ other applications into a single, beautiful SaaS platform. Say goodbye to scattered tools.
+            Edminz unifies your attendance, messaging, accounts, and 12+ other applications into a single, beautiful SaaS platform. Say goodbye to scattered tools and embrace the future.
           </p>
           <div className="hero-cta">
             <button onClick={() => navigate('/register')} className="btn btn-primary">
@@ -76,17 +80,19 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+
+
       <section id="features" className="features-section container">
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>One Platform, <span className="text-gradient">Endless Possibilities</span></h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-            Everything you need to run your institution or business, seamlessly integrated.
+        <div className="section-header">
+          <h2 className="section-title">One Platform, <span className="text-gradient">Endless Possibilities</span></h2>
+          <p className="section-subtitle">
+            Everything you need to run your institution or business, seamlessly integrated into a single unified workspace.
           </p>
         </div>
         
-        <div className="features-grid">
+        <div className="bento-grid">
           {features.map((feature, idx) => (
-            <div key={idx} className="feature-card glass-panel">
+            <div key={idx} className={`bento-item ${feature.className}`}>
               <div className="feature-icon-wrapper">
                 {feature.icon}
               </div>
@@ -97,13 +103,27 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <footer style={{ marginTop: '5rem', borderTop: '1px solid var(--border-light)', padding: '3rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <section className="cta-section container">
+        <div className="cta-box glass-panel">
+          <div className="cta-content">
+            <h2 className="cta-title">Ready to transform your organization?</h2>
+            <p className="section-subtitle" style={{ marginBottom: '2rem' }}>
+              Join thousands of businesses that use Edminz to streamline their operations.
+            </p>
+            <button onClick={() => navigate('/register')} className="btn btn-primary" style={{ fontSize: '1.1rem', padding: '1rem 2.5rem' }}>
+              Get Started for Free <Zap size={20} style={{ marginLeft: '0.5rem' }} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer style={{ borderTop: '1px solid var(--border-light)', padding: '3rem 0', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-darker)' }}>
         <div className="container">
           <div className="logo" style={{ justifyContent: 'center', marginBottom: '1rem', color: 'var(--text-main)' }}>
             <div className="logo-icon"><ShieldCheck size={24} /></div>
-            Zyron
+            Edminz
           </div>
-          <p>© 2026 Zyron SaaS Platform. All rights reserved.</p>
+          <p>© 2026 Edminz SaaS Platform. All rights reserved.</p>
         </div>
       </footer>
     </>

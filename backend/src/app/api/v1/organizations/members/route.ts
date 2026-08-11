@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'firstName, email or mobile, and password are required.' }, { status: 400 })
     }
 
-    const finalEmail = email ? email.toLowerCase().trim() : `${mobile}@zyron.local`;
+    const finalEmail = email ? email.toLowerCase().trim() : `${mobile}@edminz.local`;
 
     const passwordCheck = validatePassword(password)
     if (!passwordCheck.valid) {
@@ -143,6 +143,16 @@ export async function GET(req: NextRequest) {
             lastName: true,
           },
         },
+        groups: {
+          include: {
+            group: {
+              select: {
+                name: true,
+                type: true
+              }
+            }
+          }
+        }
       },
       orderBy: { createdAt: 'desc' },
     })

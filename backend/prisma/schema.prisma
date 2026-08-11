@@ -86,6 +86,10 @@ model User {
   isSuperAdmin Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  
+  // Security fields
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
 
   // Relations
   memberships OrganizationMember[]

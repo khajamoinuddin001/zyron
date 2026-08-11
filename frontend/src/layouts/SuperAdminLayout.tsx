@@ -30,7 +30,7 @@ const SuperAdminLayout: React.FC = () => {
           <button onClick={() => setIsDrawerOpen(true)} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer', padding: '0.25rem' }}>
             <Menu size={24} />
           </button>
-          <span style={{ fontWeight: 600 }}>Zyron Admin</span>
+          <span style={{ fontWeight: 600 }}>Edminz Admin</span>
         </div>
       </div>
 
@@ -44,7 +44,7 @@ const SuperAdminLayout: React.FC = () => {
       <aside className={`sidebar-container ${isDrawerOpen ? 'open' : ''}`}>
         <div className="logo" style={{ marginBottom: '2rem', color: 'var(--primary)' }}>
           <ShieldAlert size={28} />
-          Zyron Admin
+          Edminz Admin
         </div>
         
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>

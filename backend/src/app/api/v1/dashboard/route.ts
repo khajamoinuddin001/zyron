@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     let presentToday = 0;
     let absentToday = 0;
     todayAttendance.forEach(a => {
-      if (a.status === 'PRESENT') presentToday++;
+      if (a.status === 'PRESENT' || a.status === 'LATE') presentToday++;
       else if (a.status === 'ABSENT') absentToday++;
     });
 
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
         const mKey = `${a.date.getFullYear()}-${String(a.date.getMonth() + 1).padStart(2, '0')}`;
         if (monthlyMap[mKey]) {
           monthlyMap[mKey].total++;
-          if (a.status === 'PRESENT') monthlyMap[mKey].present++;
+          if (a.status === 'PRESENT' || a.status === 'LATE') monthlyMap[mKey].present++;
         }
       });
 
@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
         const ds = a.date.toISOString().split('T')[0];
         if (trendMap[ds]) {
           trendMap[ds].total++;
-          if (a.status === 'PRESENT') trendMap[ds].present++;
+          if (a.status === 'PRESENT' || a.status === 'LATE') trendMap[ds].present++;
         }
       });
 

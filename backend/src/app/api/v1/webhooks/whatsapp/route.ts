@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const VERIFY_TOKEN = 'ZYRON_SECURE_TOKEN_2026';
+const VERIFY_TOKEN = 'EDMINZ_SECURE_TOKEN_2026';
 
 // Handles WhatsApp webhook verification challenge
 export async function GET(req: NextRequest) {

@@ -45,10 +45,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
+    // Security: Check if account is locked
+    if (user.lockedUntil && new Date() < user.lockedUntil) {
+      const timeRemaining = Math.ceil((user.lockedUntil.getTime() - new Date().getTime()) / 60000);
+      return NextResponse.json({ error: `Your account is locked due to too many failed attempts. Try again in ${timeRemaining} minutes.` }, { status: 429 })
+    }
+
     // Verify password
     const isValid = await verifyPassword(password, user.passwordHash)
     if (!isValid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      const newAttempts = user.failedLoginAttempts + 1;
+      let lockedUntil = null;
+      
+      if (newAttempts >= 10) {
+        lockedUntil = new Date(Date.now() + 5 * 60 * 1000); // Lock for 5 minutes
+      }
+      
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: newAttempts,
+          lockedUntil
+        }
+      });
+
+      if (lockedUntil) {
+        return NextResponse.json({ error: 'Your account is locked due to too many failed attempts. Try again in 5 minutes.' }, { status: 429 })
+      }
+      
+      const attemptsRemaining = 10 - newAttempts;
+      return NextResponse.json({ error: `Invalid credentials. You have ${attemptsRemaining} attempt${attemptsRemaining === 1 ? '' : 's'} remaining before your account is locked.` }, { status: 401 })
+    }
+
+    // Reset failed login attempts on successful login
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: 0,
+          lockedUntil: null
+        }
+      });
     }
 
     // Determine org context (first active membership)

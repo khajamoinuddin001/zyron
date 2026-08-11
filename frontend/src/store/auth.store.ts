@@ -10,6 +10,7 @@ export interface Organization {
   status: string;
   logoUrl?: string | null;
   theme?: string | null;
+  workingDays?: string;
 }
 
 export interface User {

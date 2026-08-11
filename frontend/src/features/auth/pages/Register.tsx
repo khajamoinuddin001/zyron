@@ -87,7 +87,7 @@ const Register: React.FC = () => {
             <ShieldCheck size={32} />
           </div>
           <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Create Your Organization</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Get started with Zyron Business OS.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Get started with Edminz Business OS.</p>
         </div>
 
         {error && (

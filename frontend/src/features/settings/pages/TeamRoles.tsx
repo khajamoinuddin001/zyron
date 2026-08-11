@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Loader2, Shield, Users, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, Shield, Users, CheckCircle, AlertCircle, X, UserPlus } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuthStore } from '../../../store/auth.store';
 
@@ -33,6 +33,19 @@ const TeamRoles: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+  const [selectedRoleForStaff, setSelectedRoleForStaff] = useState<Role | null>(null);
+  const [staffFormData, setStaffFormData] = useState({ firstName: '', lastName: '', emailOrMobile: '', password: '' });
+  const [staffSubmitting, setStaffSubmitting] = useState(false);
+  const [staffFormError, setStaffFormError] = useState<string | null>(null);
+  const [staffFormSuccess, setStaffFormSuccess] = useState<string | null>(null);
+
+  // View Members State
+  const [isViewMembersModalOpen, setIsViewMembersModalOpen] = useState(false);
+  const [viewMembersRole, setViewMembersRole] = useState<Role | null>(null);
+  const [roleMembers, setRoleMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
   useEffect(() => {
     fetchRoles();
@@ -142,6 +155,74 @@ const TeamRoles: React.FC = () => {
     }
   };
 
+  const openStaffModal = (role: Role) => {
+    setSelectedRoleForStaff(role);
+    setStaffFormData({ firstName: '', lastName: '', emailOrMobile: '', password: '' });
+    setStaffFormError(null);
+    setStaffFormSuccess(null);
+    setIsStaffModalOpen(true);
+  };
+
+  const closeStaffModal = () => {
+    setIsStaffModalOpen(false);
+    setSelectedRoleForStaff(null);
+  };
+
+  const handleStaffSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStaffSubmitting(true);
+    setStaffFormError(null);
+    setStaffFormSuccess(null);
+
+    const isEmail = staffFormData.emailOrMobile.includes('@');
+    const payload = {
+      firstName: staffFormData.firstName,
+      lastName: staffFormData.lastName,
+      email: isEmail ? staffFormData.emailOrMobile : undefined,
+      mobile: !isEmail ? staffFormData.emailOrMobile : undefined,
+      password: staffFormData.password,
+      customRoleId: selectedRoleForStaff?.id,
+      role: 'STAFF'
+    };
+
+    try {
+      await api.post('/organizations/members', payload);
+      setStaffFormSuccess('Staff member added successfully');
+      await fetchRoles();
+      setTimeout(closeStaffModal, 1200);
+    } catch (err: any) {
+      setStaffFormError(err.message || 'Failed to add staff member');
+    } finally {
+      setStaffSubmitting(false);
+    }
+  };
+
+  const openViewMembersModal = async (role: Role) => {
+    setViewMembersRole(role);
+    setIsViewMembersModalOpen(true);
+    setLoadingMembers(true);
+    try {
+      const res = await api.get<{ members: any[] }>('/organizations/members');
+      const filtered = res.members.filter(m => m.customRoleId === role.id);
+      setRoleMembers(filtered);
+    } catch (err: any) {
+      alert('Failed to load members');
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!window.confirm('Are you sure you want to remove this member?')) return;
+    try {
+      await api.delete(`/organizations/members/${memberId}`);
+      setRoleMembers(prev => prev.filter(m => m.id !== memberId));
+      fetchRoles(); // Refresh counts
+    } catch (err: any) {
+      alert(err.message || 'Failed to remove member');
+    }
+  };
+
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '0.75rem 1rem',
@@ -234,9 +315,14 @@ const TeamRoles: React.FC = () => {
                       </div>
                     </td>
                     <td style={{ padding: '1.25rem 1.5rem', textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.75rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '20px', fontSize: '0.85rem' }}>
+                      <button 
+                        onClick={() => openViewMembersModal(role)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.75rem', backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: 'var(--primary)', borderRadius: '20px', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.1)'}
+                      >
                         <Users size={14} /> {role._count.members}
-                      </div>
+                      </button>
                     </td>
                     {/* Toggle switch */}
                     <td style={{ padding: '1.25rem 1.5rem', textAlign: 'center' }}>
@@ -267,6 +353,9 @@ const TeamRoles: React.FC = () => {
                     </td>
                     <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        <button onClick={() => openStaffModal(role)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '0.5rem', borderRadius: '4px' }} title="Add Staff Member">
+                          <UserPlus size={18} />
+                        </button>
                         <button onClick={() => openModal(role)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem', borderRadius: '4px' }} title="Edit">
                           <Edit2 size={18} />
                         </button>
@@ -369,6 +458,148 @@ const TeamRoles: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Staff Modal */}
+      {isStaffModalOpen && selectedRoleForStaff && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '1rem' }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeStaffModal(); }}
+        >
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '520px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+            <button onClick={closeStaffModal} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+              <X size={22} />
+            </button>
+
+            <h2 style={{ margin: '0 0 0.5rem 0' }}>Add Staff Member</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Assigning to role: <strong style={{ color: 'white' }}>{selectedRoleForStaff.name}</strong></p>
+
+            {staffFormError && (
+              <div style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderLeft: '4px solid #ef4444', color: '#f87171', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+                <AlertCircle size={16} /> {staffFormError}
+              </div>
+            )}
+            {staffFormSuccess && (
+              <div style={{ backgroundColor: 'rgba(74,222,128,0.1)', borderLeft: '4px solid #4ade80', color: '#4ade80', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+                <CheckCircle size={16} /> {staffFormSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleStaffSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>First Name</label>
+                  <input
+                    type="text"
+                    placeholder="John"
+                    value={staffFormData.firstName}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, firstName: e.target.value })}
+                    style={inputStyle}
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Last Name (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="Doe"
+                    value={staffFormData.lastName}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, lastName: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Email Address or Mobile</label>
+                <input
+                  type="text"
+                  placeholder="john@example.com or +1234567890"
+                  value={staffFormData.emailOrMobile}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, emailOrMobile: e.target.value })}
+                  style={inputStyle}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Temporary Password</label>
+                <input
+                  type="text"
+                  placeholder="Min 8 characters"
+                  value={staffFormData.password}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, password: e.target.value })}
+                  style={inputStyle}
+                  required
+                  minLength={8}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                <button type="button" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={closeStaffModal}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 2, justifyContent: 'center' }} disabled={staffSubmitting || !staffFormData.firstName.trim() || !staffFormData.password.trim()}>
+                  {staffSubmitting
+                    ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                    : 'Add Staff Member'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Members Modal */}
+      {isViewMembersModalOpen && viewMembersRole && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '1rem' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setIsViewMembersModalOpen(false); }}
+        >
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            <button onClick={() => setIsViewMembersModalOpen(false)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+              <X size={22} />
+            </button>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: '0 0 0.5rem 0' }}>Members</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Role: <strong style={{ color: 'white' }}>{viewMembersRole.name}</strong></p>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
+              {loadingMembers ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                  <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
+                </div>
+              ) : roleMembers.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+                  <Users size={32} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                  <p>No members assigned to this role yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {roleMembers.map(member => (
+                    <div key={member.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600 }}>
+                          {(member.user.firstName || member.user.email)[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>{member.user.firstName} {member.user.lastName}</div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{member.user.email}</div>
+                        </div>
+                      </div>
+                      <button onClick={() => handleRemoveMember(member.id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '0.4rem 0.75rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, transition: 'background-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.2)'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}>
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

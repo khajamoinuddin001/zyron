@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet, ScrollRestoration } from 'react-router-dom';
 import { useAuthStore, Role } from '../store/auth.store';
 
 import LandingPage from './LandingPage';
@@ -37,61 +37,75 @@ const ProtectedRoute = ({ allowedRoles, children }: { allowedRoles: Role[], chil
   return children ? <>{children}</> : <Outlet />;
 };
 
+const RootLayout = () => {
+  return (
+    <>
+      <ScrollRestoration />
+      <Outlet />
+    </>
+  );
+};
+
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <LandingPage />,
-  },
-  {
-    path: '/login',
-    element: <Login />,
-  },
-  {
-    path: '/register',
-    element: <Register />,
-  },
-  {
-    path: '/invite/:token',
-    element: <AcceptInvite />,
-  },
-  {
-    path: '/admin',
-    element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,
+    element: <RootLayout />,
     children: [
       {
-        path: '',
-        element: <SuperAdminLayout />,
-        children: [
-          { path: '', element: <SuperAdminDashboard /> },
-          { path: 'subscriptions', element: <Subscriptions /> },
-          { path: 'organizations', element: <OrganizationsList /> }
-        ]
-      }
-    ],
-  },
-  {
-    path: '/dashboard',
-    element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']} />,
-    children: [
+        path: '/',
+        element: <LandingPage />,
+      },
       {
-        path: '',
-        element: <DashboardLayout />,
+        path: '/login',
+        element: <Login />,
+      },
+      {
+        path: '/register',
+        element: <Register />,
+      },
+      {
+        path: '/invite/:token',
+        element: <AcceptInvite />,
+      },
+      {
+        path: '/admin',
+        element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,
         children: [
-          { path: '', element: <OrgDashboard /> },
-          { path: 'top-absent', element: <TopAbsentStudents /> },
-          { path: 'profile', element: <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT', 'PARENT']}><ProfileSettings /></ProtectedRoute> },
-          { path: 'app-store', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><AppStore /></ProtectedRoute> },
-          { path: 'team-roles', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><TeamRoles /></ProtectedRoute> },
-          { path: 'settings', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><OrgSettings /></ProtectedRoute> },
-          { path: 'attendance', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><AttendanceDashboard /></ProtectedRoute> },
-          { path: 'messaging', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><MessagingApp /></ProtectedRoute> },
-          { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT']}><CalendarApp /></ProtectedRoute> }
-        ]
+          {
+            path: '',
+            element: <SuperAdminLayout />,
+            children: [
+              { path: '', element: <SuperAdminDashboard /> },
+              { path: 'subscriptions', element: <Subscriptions /> },
+              { path: 'organizations', element: <OrganizationsList /> }
+            ]
+          }
+        ],
+      },
+      {
+        path: '/dashboard',
+        element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']} />,
+        children: [
+          {
+            path: '',
+            element: <DashboardLayout />,
+            children: [
+              { path: '', element: <OrgDashboard /> },
+              { path: 'top-absent', element: <TopAbsentStudents /> },
+              { path: 'profile', element: <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT', 'PARENT']}><ProfileSettings /></ProtectedRoute> },
+              { path: 'app-store', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><AppStore /></ProtectedRoute> },
+              { path: 'team-roles', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><TeamRoles /></ProtectedRoute> },
+              { path: 'settings', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><OrgSettings /></ProtectedRoute> },
+              { path: 'attendance', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><AttendanceDashboard /></ProtectedRoute> },
+              { path: 'messaging', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><MessagingApp /></ProtectedRoute> },
+              { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT']}><CalendarApp /></ProtectedRoute> }
+            ]
+          }
+        ],
+      },
+      {
+        path: '*',
+        element: <Navigate to="/" replace />
       }
-    ],
-  },
-  {
-    path: '*',
-    element: <Navigate to="/" replace />
+    ]
   }
 ]);

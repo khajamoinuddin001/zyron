@@ -57,18 +57,44 @@ export async function POST(req: NextRequest, { params }: { params: { groupId: st
     
     if (!group) return NextResponse.json({ error: 'Group not found' }, { status: 404 })
 
-    // Use a transaction to replace members (clear existing, add new)
-    await prisma.$transaction([
+    // Find which members are students
+    const membersData = await prisma.organizationMember.findMany({
+      where: { id: { in: memberIds } },
+      select: { id: true, role: true }
+    })
+    
+    const studentIds = membersData.filter(m => m.role === 'STUDENT').map(m => m.id)
+
+    const transactionTasks: any[] = [
       prisma.organizationGroupMember.deleteMany({
         where: { groupId }
-      }),
-      prisma.organizationGroupMember.createMany({
-        data: memberIds.map(id => ({
-          groupId,
-          memberId: id
-        }))
       })
-    ])
+    ]
+
+    // If this group is a CLASS, remove the selected students from any other CLASS
+    if (group.type === 'CLASS' && studentIds.length > 0) {
+      transactionTasks.push(
+        prisma.organizationGroupMember.deleteMany({
+          where: {
+            memberId: { in: studentIds },
+            group: { type: 'CLASS' }
+          }
+        })
+      )
+    }
+
+    if (memberIds.length > 0) {
+      transactionTasks.push(
+        prisma.organizationGroupMember.createMany({
+          data: memberIds.map(id => ({
+            groupId,
+            memberId: id
+          }))
+        })
+      )
+    }
+
+    await prisma.$transaction(transactionTasks)
 
     return NextResponse.json({ success: true })
   } catch (error) {

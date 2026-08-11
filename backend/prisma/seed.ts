@@ -94,11 +94,11 @@ async function main() {
   // ─── 3. Demo Organization ─────────────────────────────────────────────────
   console.log('🏫 Creating demo organization...')
   const demoOrg = await prisma.organization.upsert({
-    where: { domain: 'demo-school.zyron.app' },
+    where: { domain: 'demo-school.edminz.app' },
     update: {},
     create: {
       name: 'Demo School',
-      domain: 'demo-school.zyron.app',
+      domain: 'demo-school.edminz.app',
       status: 'ACTIVE',
     },
   })

@@ -1,6 +1,6 @@
-# Zyron — Multi-Tenant SaaS Platform
+# Edminz — Multi-Tenant SaaS Platform
 
-> A powerful, modular SaaS platform for businesses (schools, transport companies, and more) to manage their day-to-day operations. Zyron gives each organization its own isolated dashboard while the Super Admin monitors and controls all organizations invisibly from a platform-level admin panel.
+> A powerful, modular SaaS platform for businesses (schools, transport companies, and more) to manage their day-to-day operations. Edminz gives each organization its own isolated dashboard while the Super Admin monitors and controls all organizations invisibly from a platform-level admin panel.
 
 ---
 
@@ -28,7 +28,7 @@
 
 ## Project Overview
 
-Zyron is an **Odoo-like multi-tenant SaaS platform** where:
+Edminz is an **Odoo-like multi-tenant SaaS platform** where:
 
 - **Organizations** (schools, transport companies, etc.) get their own admin dashboard
 - **Org Admins** can manage their staff, settings, and activate/deactivate modules they subscribe to
@@ -39,7 +39,7 @@ Zyron is an **Odoo-like multi-tenant SaaS platform** where:
 ## Architecture
 
 ```
-zyron/
+edminz/
 ├── frontend/      → Vite + React (runs on port 5173)
 ├── backend/       → Next.js API Routes (runs on port 3001)
 └── docker-compose.yml  → PostgreSQL + pgAdmin
@@ -73,7 +73,7 @@ Browser (React) → Backend API (Next.js) → PostgreSQL (via Prisma ORM)
 ## Project Structure
 
 ```
-zyron/
+edminz/
 ├── frontend/
 │   ├── src/
 │   │   ├── app/             # Router & App entry
@@ -147,21 +147,21 @@ Make sure you have the following installed:
 brew services start postgresql@14
 
 # Create DB user and database (only needed once)
-psql -c "CREATE USER zyron_user WITH PASSWORD 'zyron_pass' CREATEDB;" postgres
-psql -c "CREATE DATABASE zyron_db OWNER zyron_user;" postgres
-psql -c "GRANT ALL PRIVILEGES ON DATABASE zyron_db TO zyron_user;" postgres
+psql -c "CREATE USER edminz_user WITH PASSWORD 'edminz_pass' CREATEDB;" postgres
+psql -c "CREATE DATABASE edminz_db OWNER edminz_user;" postgres
+psql -c "GRANT ALL PRIVILEGES ON DATABASE edminz_db TO edminz_user;" postgres
 ```
 
 **Option B — Docker:**
 ```bash
-# From the zyron/ root directory (requires Docker Desktop to be running)
+# From the edminz/ root directory (requires Docker Desktop to be running)
 docker compose up -d
 ```
 
 This starts:
 - **PostgreSQL** on `localhost:5432`
 - **pgAdmin** (DB browser UI) on `http://localhost:5050`
-  - Email: `admin@zyron.com` / Password: `admin123`
+  - Email: `admin@edminz.com` / Password: `admin123`
 
 ---
 
@@ -198,7 +198,7 @@ Expected seed output:
 ### 3. Setup the Frontend
 
 ```bash
-# From the zyron/ root, go to frontend
+# From the edminz/ root, go to frontend
 cd frontend
 
 # Install dependencies
@@ -213,20 +213,20 @@ You need **3 terminals** to run the full stack:
 
 ### Terminal 1 — Database
 ```bash
-# From zyron/ root
+# From edminz/ root
 docker compose up
 ```
 
 ### Terminal 2 — Backend API
 ```bash
-# From zyron/backend/
+# From edminz/backend/
 npm run dev
 ```
 Backend runs at: **http://localhost:3001**
 
 ### Terminal 3 — Frontend
 ```bash
-# From zyron/frontend/
+# From edminz/frontend/
 npm run dev
 ```
 Frontend runs at: **http://localhost:5173**
@@ -304,7 +304,7 @@ All endpoints are prefixed with `/api/v1`
 
 ### Backend (`backend/.env`)
 ```env
-DATABASE_URL="postgresql://zyron_user:zyron_pass@localhost:5432/zyron_db"
+DATABASE_URL="postgresql://edminz_user:edminz_pass@localhost:5432/edminz_db"
 JWT_SECRET="your_super_secret_jwt_key"
 JWT_EXPIRES_IN="7d"
 FRONTEND_URL="http://localhost:5173"
@@ -322,7 +322,7 @@ VITE_API_URL=http://localhost:3001/api/v1
 ## Database Management
 
 ```bash
-# From zyron/backend/
+# From edminz/backend/
 
 # Open Prisma Studio (visual DB editor in browser)
 npm run db:studio

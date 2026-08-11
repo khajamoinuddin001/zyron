@@ -1,46 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, CheckCircle, XCircle, BookOpen, Loader2 } from 'lucide-react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAuthStore } from '../../../store/auth.store';
 import { api } from '../../../services/api';
+import { useQuery } from '@tanstack/react-query';
 
 const COLORS = ['#10b981', '#f43f5e']; // Green for Present, Red for Absent
 
 const Dashboard: React.FC = () => {
   const user = useAuthStore((state) => state.user);
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [groups, setGroups] = useState<any[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [trendPeriod, setTrendPeriod] = useState<string>('7');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Fetch groups for the filter dropdown
-    api.get<{ groups: any[] }>('/organizations/groups')
-      .then(res => setGroups(res.groups || []))
-      .catch(console.error);
-  }, []);
+  // 1. Fetch groups with useQuery
+  const { data: groupsData } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => api.get<{ groups: any[] }>('/organizations/groups')
+  });
+  const groups = groupsData?.groups || [];
 
-  useEffect(() => {
-    setLoading(true);
-    const query = new URLSearchParams();
-    if (selectedGroupId) query.append('groupId', selectedGroupId);
-    if (selectedDate) query.append('date', selectedDate);
-    if (trendPeriod) query.append('trend', trendPeriod);
-
-    api.get<any>(`/dashboard?${query.toString()}`)
-      .then(res => {
-        setData(res);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [selectedGroupId, selectedDate, trendPeriod]);
+  // 2. Fetch dashboard stats with useQuery, incorporating filters into the queryKey
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['dashboard', selectedGroupId, selectedDate, trendPeriod],
+    queryFn: () => {
+      const query = new URLSearchParams();
+      if (selectedGroupId) query.append('groupId', selectedGroupId);
+      if (selectedDate) query.append('date', selectedDate);
+      if (trendPeriod) query.append('trend', trendPeriod);
+      return api.get<any>(`/dashboard?${query.toString()}`);
+    }
+  });
 
   if (loading || !data) {
     return (
@@ -59,8 +51,8 @@ const Dashboard: React.FC = () => {
     <div style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '2rem' }}>
       {/* Top Header */}
       <div className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 auto', minWidth: '300px' }}>
-          <h1 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ flex: '1 1 auto', minWidth: '0' }}>
+          <h1 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>
             Welcome back, {user?.firstName || 'Admin'}! 👋
           </h1>
           <p style={{ color: 'var(--text-muted)', margin: 0, maxWidth: '400px', lineHeight: '1.5' }}>Here's what's happening in your institution today.</p>
@@ -90,55 +82,45 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 4 Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      {/* 3 Stat Cards */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '2rem' }}>
         {/* Total Students */}
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', backgroundColor: 'var(--bg-card)' }}>
-          <div style={{ padding: '1rem', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderRadius: '12px', color: '#4f46e5' }}>
-            <Users size={28} />
+        <div className="glass-panel" style={{ flex: '1 1 250px', maxWidth: '320px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', backgroundColor: 'var(--bg-card)' }}>
+          <div style={{ padding: '0.8rem', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderRadius: '12px', color: '#4f46e5' }}>
+            <Users size={24} />
           </div>
           <div>
-            <p style={{ color: 'var(--text-muted)', margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>Total Students</p>
-            <h3 style={{ fontSize: '1.8rem', margin: '0 0 0.25rem 0' }}>{data.totalStudents.toLocaleString()}</h3>
-            <p style={{ color: '#10b981', margin: 0, fontSize: '0.8rem', fontWeight: 500 }}>↑ +12 this month</p>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 0.25rem 0', fontSize: '0.85rem' }}>Total Students</p>
+            <h3 style={{ fontSize: '1.6rem', margin: '0 0 0.25rem 0' }}>{data.totalStudents.toLocaleString()}</h3>
+            <p style={{ color: '#10b981', margin: 0, fontSize: '0.75rem', fontWeight: 500 }}>↑ +12 this month</p>
           </div>
         </div>
 
         {/* Present Today */}
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', backgroundColor: 'var(--bg-card)' }}>
-          <div style={{ padding: '1rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
-            <CheckCircle size={28} />
+        <div className="glass-panel" style={{ flex: '1 1 250px', maxWidth: '320px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', backgroundColor: 'var(--bg-card)' }}>
+          <div style={{ padding: '0.8rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
+            <CheckCircle size={24} />
           </div>
           <div>
-            <p style={{ color: 'var(--text-muted)', margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>Present Today</p>
-            <h3 style={{ fontSize: '1.8rem', margin: '0 0 0.25rem 0' }}>{data.presentToday.toLocaleString()}</h3>
-            <p style={{ color: '#10b981', margin: 0, fontSize: '0.8rem', fontWeight: 500 }}>↑ {data.presentPercent}% of total</p>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 0.25rem 0', fontSize: '0.85rem' }}>Present Today</p>
+            <h3 style={{ fontSize: '1.6rem', margin: '0 0 0.25rem 0' }}>{data.presentToday.toLocaleString()}</h3>
+            <p style={{ color: '#10b981', margin: 0, fontSize: '0.75rem', fontWeight: 500 }}>↑ {data.presentPercent}% of total</p>
           </div>
         </div>
 
         {/* Absent Today */}
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', backgroundColor: 'var(--bg-card)' }}>
-          <div style={{ padding: '1rem', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderRadius: '12px', color: '#f43f5e' }}>
-            <XCircle size={28} />
+        <div className="glass-panel" style={{ flex: '1 1 250px', maxWidth: '320px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', backgroundColor: 'var(--bg-card)' }}>
+          <div style={{ padding: '0.8rem', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderRadius: '12px', color: '#f43f5e' }}>
+            <XCircle size={24} />
           </div>
           <div>
-            <p style={{ color: 'var(--text-muted)', margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>Absent Today</p>
-            <h3 style={{ fontSize: '1.8rem', margin: '0 0 0.25rem 0' }}>{data.absentToday.toLocaleString()}</h3>
-            <p style={{ color: '#f43f5e', margin: 0, fontSize: '0.8rem', fontWeight: 500 }}>↓ {data.absentPercent}% of total</p>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 0.25rem 0', fontSize: '0.85rem' }}>Absent Today</p>
+            <h3 style={{ fontSize: '1.6rem', margin: '0 0 0.25rem 0' }}>{data.absentToday.toLocaleString()}</h3>
+            <p style={{ color: '#f43f5e', margin: 0, fontSize: '0.75rem', fontWeight: 500 }}>↓ {data.absentPercent}% of total</p>
           </div>
         </div>
 
-        {/* Classes */}
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', backgroundColor: 'var(--bg-card)' }}>
-          <div style={{ padding: '1rem', backgroundColor: 'rgba(168, 85, 247, 0.1)', borderRadius: '12px', color: '#a855f7' }}>
-            <BookOpen size={28} />
-          </div>
-          <div>
-            <p style={{ color: 'var(--text-muted)', margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>Classes</p>
-            <h3 style={{ fontSize: '1.8rem', margin: '0 0 0.25rem 0' }}>{data.classesToday.toLocaleString()}</h3>
-            <p style={{ color: '#a855f7', margin: 0, fontSize: '0.8rem', fontWeight: 500 }}>All ongoing</p>
-          </div>
-        </div>
+
       </div>
 
       {/* Main Charts Section */}

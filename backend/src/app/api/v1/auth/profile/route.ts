@@ -7,16 +7,18 @@ export async function PATCH(req: NextRequest) {
     const authUser = requireAuth(req)
     if (authUser instanceof NextResponse) return authUser
 
-    const { theme } = await req.json()
+    const { theme, firstName, lastName } = await req.json()
 
     const updatedUser = await prisma.user.update({
       where: { id: authUser.userId },
       data: {
         ...(theme !== undefined && { theme }),
+        ...(firstName !== undefined && { firstName }),
+        ...(lastName !== undefined && { lastName }),
       }
     })
 
-    return NextResponse.json({ user: { id: updatedUser.id, theme: updatedUser.theme } })
+    return NextResponse.json({ user: { id: updatedUser.id, theme: updatedUser.theme, firstName: updatedUser.firstName, lastName: updatedUser.lastName } })
   } catch (error) {
     console.error('[PROFILE_UPDATE_ERROR]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

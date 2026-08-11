@@ -23,6 +23,12 @@ interface Member {
     email: string;
   };
   role: string;
+  groups?: {
+    group: {
+      name: string;
+      type: string;
+    };
+  }[];
 }
 
 interface OrgGroup {
@@ -154,10 +160,34 @@ const AttendanceDashboard: React.FC = () => {
 
         return localDateStr === date;
       });
-      setHolidayName(holidayEvent ? holidayEvent.title : null);
+
+      // Check if it's a non-working day
+      const parts = date.split('-');
+      const targetDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      const dayOfWeek = targetDate.getDay();
+      
+      let workingDaysArr = [1, 2, 3, 4, 5, 6];
+      try {
+        if (authUser?.organization?.workingDays) {
+          workingDaysArr = JSON.parse(authUser.organization.workingDays);
+        }
+      } catch (e) {
+        console.error('Failed to parse workingDays', e);
+      }
+      const isNonWorkingDay = !workingDaysArr.includes(dayOfWeek);
+
+      if (holidayEvent) {
+        setHolidayName(holidayEvent.title);
+      } else if (isNonWorkingDay) {
+        setHolidayName("Non-Working Day (Weekend)");
+      } else {
+        setHolidayName(null);
+      }
 
       const isOrgAdmin = authUser?.role === 'ORG_ADMIN' || authUser?.isSuperAdmin;
-      setIsLocked((!isOrgAdmin && (attRes.records || []).length > 0) || !!holidayEvent);
+      const attExists = (attRes.records || []).length > 0;
+
+      setIsLocked((!isOrgAdmin && attExists) || !!holidayEvent || isNonWorkingDay);
     } catch (err) {
       console.error(err);
     } finally {
@@ -197,6 +227,7 @@ const AttendanceDashboard: React.FC = () => {
 
   const openManageMembers = async (group: OrgGroup) => {
     setManageGroup(group);
+    setMemberSearchQuery('');
     try {
       const [allRes, memRes] = await Promise.all([
         api.get<{ members: Member[] }>('/organizations/members'),
@@ -649,8 +680,6 @@ const AttendanceDashboard: React.FC = () => {
                 <select value={newGroupType} onChange={e => setNewGroupType(e.target.value)} style={{ width: '100%', padding: '0.75rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '8px', color: 'var(--text-main)', boxSizing: 'border-box' }}>
                   <option value="CLASS">Class</option>
                   <option value="DEPARTMENT">Department</option>
-                  <option value="TEAM">Team</option>
-                  <option value="SHIFT">Shift</option>
                 </select>
               </div>
               <button type="submit" className="btn btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>Create Group</button>
@@ -675,8 +704,6 @@ const AttendanceDashboard: React.FC = () => {
                 <select value={editGroupType} onChange={e => setEditGroupType(e.target.value)} style={{ width: '100%', padding: '0.75rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '8px', color: 'var(--text-main)', boxSizing: 'border-box' }}>
                   <option value="CLASS">Class</option>
                   <option value="DEPARTMENT">Department</option>
-                  <option value="TEAM">Team</option>
-                  <option value="SHIFT">Shift</option>
                 </select>
               </div>
               <button type="submit" className="btn btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>Save Changes</button>
@@ -705,20 +732,80 @@ const AttendanceDashboard: React.FC = () => {
             </div>
 
             <div style={{ overflowY: 'auto', flex: 1, backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-light)', padding: '1rem', marginBottom: '1.5rem' }}>
-              {allOrgMembers
-                .filter(m => (m.user.firstName + ' ' + m.user.lastName).toLowerCase().includes(memberSearchQuery.toLowerCase()) || m.user.email.toLowerCase().includes(memberSearchQuery.toLowerCase()))
-                .map(m => {
-                const isSelected = manageGroupMembers.includes(m.id);
-                return (
-                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', borderBottom: '1px solid var(--bg-card)', cursor: 'pointer' }} onClick={() => setManageGroupMembers(prev => isSelected ? prev.filter(id => id !== m.id) : [...prev, m.id])}>
-                    <input type="checkbox" checked={isSelected} readOnly style={{ cursor: 'pointer' }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 500 }}>{m.user.firstName} {m.user.lastName}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{m.user.email} · {m.role}</div>
+              {(() => {
+                const filteredMembers = allOrgMembers.filter(m => {
+                  const matchesSearch = (m.user.firstName + ' ' + m.user.lastName).toLowerCase().includes(memberSearchQuery.toLowerCase()) || m.user.email.toLowerCase().includes(memberSearchQuery.toLowerCase());
+                  if (!matchesSearch) return false;
+                  
+                  if (manageGroup.type === 'CLASS') {
+                    return m.role === 'STUDENT';
+                  } else if (manageGroup.type === 'DEPARTMENT') {
+                    return m.role !== 'STUDENT';
+                  }
+                  return true;
+                });
+                
+                const groupedMembers: { [key: string]: typeof allOrgMembers } = {};
+                
+                filteredMembers.forEach(m => {
+                  if (!m.groups || m.groups.length === 0) {
+                    if (!groupedMembers['Unassigned']) groupedMembers['Unassigned'] = [];
+                    groupedMembers['Unassigned'].push(m);
+                  } else {
+                    const primaryGroup = m.groups[0].group;
+                    const typeStr = primaryGroup.type ? primaryGroup.type.charAt(0).toUpperCase() + primaryGroup.type.slice(1).toLowerCase() : 'Group';
+                    const groupKey = `${typeStr}:- ${primaryGroup.name}`;
+                    if (!groupedMembers[groupKey]) groupedMembers[groupKey] = [];
+                    groupedMembers[groupKey].push(m);
+                  }
+                });
+
+                const sortedGroups = Object.entries(groupedMembers).sort((a, b) => {
+                  if (a[0] === 'Unassigned') return -1;
+                  if (b[0] === 'Unassigned') return 1;
+                  return a[0].localeCompare(b[0]);
+                });
+
+                return sortedGroups.map(([groupKey, members]) => (
+                  <div key={groupKey} style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-main)', fontSize: '1rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>
+                      {groupKey}
                     </div>
+                    {members.map(m => {
+                      const isSelected = manageGroupMembers.includes(m.id);
+                      return (
+                        <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', borderBottom: '1px solid var(--bg-card)', cursor: 'pointer' }} onClick={() => {
+                          if (isSelected) {
+                            setManageGroupMembers(prev => prev.filter(id => id !== m.id));
+                          } else {
+                            if (manageGroup.type === 'CLASS' && m.role === 'STUDENT') {
+                              const otherClasses = m.groups?.filter(g => g.group.type === 'CLASS' && g.group.name !== manageGroup.name);
+                              if (otherClasses && otherClasses.length > 0) {
+                                const classNames = otherClasses.map(g => g.group.name).join(', ');
+                                const confirmMsg = `${m.user.firstName} is already assigned to ${classNames}. Adding them to ${manageGroup.name} will remove them from their current class. Do you want to continue?`;
+                                if (!window.confirm(confirmMsg)) {
+                                  return;
+                                }
+                              }
+                            }
+                            setManageGroupMembers(prev => [...prev, m.id]);
+                          }
+                        }}>
+                          <input type="checkbox" checked={isSelected} readOnly style={{ cursor: 'pointer' }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 500 }}>
+                              {m.user.firstName} {m.user.lastName}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                              {m.user.email} · {m.role}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                ));
+              })()}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>

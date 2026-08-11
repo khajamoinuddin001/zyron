@@ -1,7 +1,7 @@
 {
-  "name": "zyron-backend",
+  "name": "edminz-backend",
   "version": "1.0.0",
-  "description": "Zyron SaaS Backend - Next.js API",
+  "description": "Edminz SaaS Backend - Next.js API",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
