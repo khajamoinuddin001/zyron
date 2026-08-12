@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, Phone, User, CalendarDays } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export interface Contact {
   id: string;
@@ -22,7 +23,8 @@ interface ContactCardProps {
 
 export const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
   return (
-    <div className="glass-panel hover-scale" style={{ padding: '1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)' }}>
+    <Link to={`/dashboard/contacts/${contact.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <div className="glass-panel hover-scale" style={{ padding: '1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)' }}>
       {/* Header Row */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'flex-start' }}>
         {/* Avatar with Badge */}
@@ -108,6 +110,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
           </span>
         )}
       </div>
-    </div>
+      </div>
+    </Link>
   );
 };

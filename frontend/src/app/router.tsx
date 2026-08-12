@@ -22,6 +22,7 @@ import AttendanceDashboard from '../features/attendance/pages/AttendanceDashboar
 import MessagingApp from '../features/messaging/pages/MessagingApp';
 import { CalendarApp } from '../features/calendar/pages/CalendarApp';
 import ContactsApp from '../features/contacts/pages/ContactsApp';
+import ContactDetails from '../features/contacts/pages/ContactDetails';
 
 const ProtectedRoute = ({ allowedRoles, children }: { allowedRoles: Role[], children?: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -101,7 +102,8 @@ export const router = createBrowserRouter([
               { path: 'attendance', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><AttendanceDashboard /></ProtectedRoute> },
               { path: 'messaging', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><MessagingApp /></ProtectedRoute> },
               { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT']}><CalendarApp /></ProtectedRoute> },
-              { path: 'contacts', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactsApp /></ProtectedRoute> }
+              { path: 'contacts', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactsApp /></ProtectedRoute> },
+              { path: 'contacts/:id', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactDetails /></ProtectedRoute> }
             ]
           }
         ],

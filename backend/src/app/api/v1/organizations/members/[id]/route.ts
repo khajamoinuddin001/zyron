@@ -2,6 +2,62 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/core/database/prisma'
 import { requireAuth } from '@/core/auth/middleware'
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authUser = requireAuth(req)
+    if (authUser instanceof NextResponse) return authUser
+
+    if (!authUser.organizationId) {
+      return NextResponse.json({ error: 'No organization context found.' }, { status: 400 })
+    }
+
+    const memberId = params.id
+
+    const member = await prisma.organizationMember.findFirst({
+      where: {
+        id: memberId,
+        organizationId: authUser.organizationId
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            mobile: true,
+            createdAt: true,
+          }
+        },
+        customRole: true,
+        groups: {
+          include: {
+            group: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!member) {
+      return NextResponse.json({ error: 'Member not found.' }, { status: 404 })
+    }
+
+    return NextResponse.json({ member })
+  } catch (error) {
+    console.error('[GET_MEMBER_ERROR]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
