@@ -4,6 +4,7 @@ import { api } from '../../../services/api';
 import { useAuthStore } from '../../../store/auth.store';
 import { AttendanceSettings } from './AttendanceSettings';
 import { AttendanceHolidays } from './AttendanceHolidays';
+import '../../../attendance-buttons.css';
 
 interface AttendanceRecord {
   id: string;
@@ -84,13 +85,16 @@ const AttendanceDashboard: React.FC = () => {
   // Invite Link State
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [generatedInviteLink, setGeneratedInviteLink] = useState<string | null>(null);
+  const [linkSetupGroup, setLinkSetupGroup] = useState<string | null>(null);
+  const [inviteExpiration, setInviteExpiration] = useState<string>('24'); // Default 24 hours
 
-  const generateInviteLink = async (groupId: string) => {
+  const generateInviteLink = async (groupId: string, expiresInHours: string) => {
     try {
       setGeneratingLink(groupId);
-      const res = await api.post<{ invite: { token: string } }>('/organizations/invites', { groupId });
+      const res = await api.post<{ invite: { token: string } }>('/organizations/invites', { groupId, expiresInHours: expiresInHours === 'NEVER' ? null : expiresInHours });
       const link = `${window.location.origin}/invite/${res.invite.token}`;
       setGeneratedInviteLink(link);
+      setLinkSetupGroup(null);
     } catch (err: any) {
       alert('Failed to generate link: ' + err.message);
     } finally {
@@ -165,7 +169,7 @@ const AttendanceDashboard: React.FC = () => {
       const parts = date.split('-');
       const targetDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
       const dayOfWeek = targetDate.getDay();
-      
+
       let workingDaysArr = [1, 2, 3, 4, 5, 6];
       try {
         if (authUser?.organization?.workingDays) {
@@ -327,7 +331,7 @@ const AttendanceDashboard: React.FC = () => {
         </div>
         <div className="w-full-mobile" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', overflowX: 'auto', backgroundColor: 'var(--bg-card)', padding: '0.4rem', borderRadius: '12px' }}>
           <button className={`btn ${activeTab === 'TAKE_ATTENDANCE' ? 'btn-primary' : ''}`} style={{ background: activeTab === 'TAKE_ATTENDANCE' ? '' : 'transparent', border: 'none', color: activeTab === 'TAKE_ATTENDANCE' ? 'white' : 'var(--text-muted)', whiteSpace: 'nowrap' }} onClick={() => setActiveTab('TAKE_ATTENDANCE')}>
-            <CheckCircle size={16} /> Mark Attendance
+            <CheckCircle size={16} /> Attendance
           </button>
           <button className={`btn ${activeTab === 'MANAGE_GROUPS' ? 'btn-primary' : ''}`} style={{ background: activeTab === 'MANAGE_GROUPS' ? '' : 'transparent', border: 'none', color: activeTab === 'MANAGE_GROUPS' ? 'white' : 'var(--text-muted)', whiteSpace: 'nowrap' }} onClick={() => setActiveTab('MANAGE_GROUPS')}>
             <Users size={16} /> Manage Groups
@@ -396,8 +400,8 @@ const AttendanceDashboard: React.FC = () => {
                           <button className="btn btn-outline" style={{ padding: '0.4rem', fontSize: '0.8rem' }} onClick={() => { setEditGroup(g); setEditGroupName(g.name); setEditGroupType(g.type); }} title="Rename Group">
                             <Edit2 size={14} />
                           </button>
-                          <button className="btn btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }} onClick={() => generateInviteLink(g.id)} disabled={generatingLink === g.id}>
-                            {generatingLink === g.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <LinkIcon size={14} />} Link
+                          <button className="btn btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }} onClick={() => setLinkSetupGroup(g.id)} disabled={generatingLink === g.id}>
+                            <LinkIcon size={14} /> Link
                           </button>
                         </div>
                       </td>
@@ -411,7 +415,7 @@ const AttendanceDashboard: React.FC = () => {
       )}
 
       {activeTab === 'TAKE_ATTENDANCE' && (
-        <div className="flex-col-mobile" style={{ display: 'flex', gap: '2rem' }}>
+        <div className="flex-col-mobile flex-col-tablet" style={{ display: 'flex', gap: '2rem' }}>
           {/* Left Sidebar */}
           <div className="w-full-mobile" style={{ flex: 1, minWidth: '300px' }}>
             <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
@@ -517,12 +521,12 @@ const AttendanceDashboard: React.FC = () => {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button className="btn btn-outline" style={{ fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }} onClick={handleDownloadReport} disabled={!groupMembers.length}>
-                  <Download size={16} /> Download CSV
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                <button className="btn btn-outline" style={{ fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.5rem 1rem' }} onClick={handleDownloadReport} disabled={!groupMembers.length}>
+                  <Download size={16} /> <span className="hide-mobile">Download</span>
                 </button>
-                <button className="btn btn-primary" style={{ fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center', opacity: isLocked ? 0.5 : 1 }} onClick={() => setTakingAttendanceIndex(0)} disabled={!groupMembers.length || isLocked} title={isLocked ? "Locked" : ""}>
-                  <BookOpen size={16} /> Start Attendance
+                <button className="btn btn-primary" style={{ fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.5rem 1rem', opacity: isLocked ? 0.5 : 1 }} onClick={() => setTakingAttendanceIndex(0)} disabled={!groupMembers.length || isLocked} title={isLocked ? "Locked" : ""}>
+                  <BookOpen size={16} /> <span className="hide-mobile">Start Attendance</span><span className="show-mobile-flex">Start</span>
                 </button>
               </div>
             </div>
@@ -541,26 +545,28 @@ const AttendanceDashboard: React.FC = () => {
                   {groupMembers.map(member => {
                     const status = records[member.id];
                     return (
-                      <div key={member.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'var(--bg-card-hover)', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: 'var(--text-main)' }}>
+                      <div key={member.id} className="roster-row">
+                        <div className="roster-info">
+                          <div className="roster-avatar">
                             {member.user.firstName.charAt(0)}{member.user.lastName?.charAt(0)}
                           </div>
-                          <div>
-                            <div style={{ fontWeight: 500 }}>{member.user.firstName} {member.user.lastName}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{member.user.email}</div>
+                          <div className="roster-name-container">
+                            <div className="roster-name">{member.user.firstName} {member.user.lastName}</div>
+                            <div className="hide-mobile roster-email">
+                              {member.user.email}
+                            </div>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '0.5rem', backgroundColor: 'var(--bg-dark)', padding: '0.35rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                        <div className="roster-actions">
                           <button
-                            className="btn"
+                            className="btn att-btn"
                             disabled={isLocked}
+                            title="Present"
                             style={{
-                              padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.85rem', border: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem',
-                              backgroundColor: status === 'PRESENT' ? 'rgba(74,222,128,0.2)' : 'transparent',
+                              backgroundColor: status === 'PRESENT' ? 'rgba(74,222,128,0.15)' : 'transparent',
                               color: status === 'PRESENT' ? '#4ade80' : 'var(--text-muted)',
-                              fontWeight: status === 'PRESENT' ? 600 : 400,
+                              boxShadow: status === 'PRESENT' ? '0 0 0 1px rgba(74,222,128,0.3) inset' : 'none',
                               opacity: isLocked ? 0.5 : 1, cursor: isLocked ? 'not-allowed' : 'pointer'
                             }}
                             onClick={() => handleStatusChange(member.id, 'PRESENT')}
@@ -569,13 +575,13 @@ const AttendanceDashboard: React.FC = () => {
                           </button>
 
                           <button
-                            className="btn"
+                            className="btn att-btn"
                             disabled={isLocked}
+                            title="Late"
                             style={{
-                              padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.85rem', border: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem',
-                              backgroundColor: status === 'LATE' ? 'rgba(250,204,21,0.2)' : 'transparent',
+                              backgroundColor: status === 'LATE' ? 'rgba(250,204,21,0.15)' : 'transparent',
                               color: status === 'LATE' ? '#facc15' : 'var(--text-muted)',
-                              fontWeight: status === 'LATE' ? 600 : 400,
+                              boxShadow: status === 'LATE' ? '0 0 0 1px rgba(250,204,21,0.3) inset' : 'none',
                               opacity: isLocked ? 0.5 : 1, cursor: isLocked ? 'not-allowed' : 'pointer'
                             }}
                             onClick={() => handleStatusChange(member.id, 'LATE')}
@@ -584,13 +590,13 @@ const AttendanceDashboard: React.FC = () => {
                           </button>
 
                           <button
-                            className="btn"
+                            className="btn att-btn"
                             disabled={isLocked}
+                            title="Absent"
                             style={{
-                              padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.85rem', border: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem',
-                              backgroundColor: status === 'ABSENT' ? 'rgba(239,68,68,0.2)' : 'transparent',
+                              backgroundColor: status === 'ABSENT' ? 'rgba(239,68,68,0.15)' : 'transparent',
                               color: status === 'ABSENT' ? '#f87171' : 'var(--text-muted)',
-                              fontWeight: status === 'ABSENT' ? 600 : 400,
+                              boxShadow: status === 'ABSENT' ? '0 0 0 1px rgba(239,68,68,0.3) inset' : 'none',
                               opacity: isLocked ? 0.5 : 1, cursor: isLocked ? 'not-allowed' : 'pointer'
                             }}
                             onClick={() => handleStatusChange(member.id, 'ABSENT')}
@@ -736,7 +742,7 @@ const AttendanceDashboard: React.FC = () => {
                 const filteredMembers = allOrgMembers.filter(m => {
                   const matchesSearch = (m.user.firstName + ' ' + m.user.lastName).toLowerCase().includes(memberSearchQuery.toLowerCase()) || m.user.email.toLowerCase().includes(memberSearchQuery.toLowerCase());
                   if (!matchesSearch) return false;
-                  
+
                   if (manageGroup.type === 'CLASS') {
                     return m.role === 'STUDENT';
                   } else if (manageGroup.type === 'DEPARTMENT') {
@@ -744,9 +750,9 @@ const AttendanceDashboard: React.FC = () => {
                   }
                   return true;
                 });
-                
+
                 const groupedMembers: { [key: string]: typeof allOrgMembers } = {};
-                
+
                 filteredMembers.forEach(m => {
                   if (!m.groups || m.groups.length === 0) {
                     if (!groupedMembers['Unassigned']) groupedMembers['Unassigned'] = [];
@@ -890,24 +896,60 @@ const AttendanceDashboard: React.FC = () => {
       {activeTab === 'HOLIDAYS' && isOrgAdmin && <AttendanceHolidays />}
 
       {/* GENERATED INVITE LINK MODAL */}
+      {/* LINK SETUP MODAL */}
+      {linkSetupGroup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '1rem' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2rem', position: 'relative', backgroundColor: 'var(--bg-darker)' }}>
+            <button onClick={() => setLinkSetupGroup(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={20} /></button>
+            <h3 style={{ margin: '0 0 1.5rem 0' }}>Generate Invite Link</h3>
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Link Expiration</label>
+              <select 
+                value={inviteExpiration} 
+                onChange={e => setInviteExpiration(e.target.value)} 
+                style={{ width: '100%', padding: '0.75rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '8px', color: 'var(--text-main)', outline: 'none' }}
+              >
+                <option value="1">1 Hour</option>
+                <option value="12">12 Hours</option>
+                <option value="24">24 Hours</option>
+                <option value="168">7 Days</option>
+                <option value="720">30 Days</option>
+                <option value="NEVER">Never Expire</option>
+              </select>
+            </div>
+
+            <button 
+              className="btn btn-primary" 
+              style={{ width: '100%', padding: '0.75rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} 
+              onClick={() => generateInviteLink(linkSetupGroup, inviteExpiration)}
+              disabled={generatingLink === linkSetupGroup}
+            >
+              {generatingLink === linkSetupGroup ? 'Generating...' : <><LinkIcon size={18} /> Generate Link</>}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* GENERATED LINK MODAL */}
       {generatedInviteLink && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.8)', padding: '1rem' }}>
           <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '2rem', position: 'relative', backgroundColor: 'var(--bg-darker)' }}>
-            <button onClick={() => setGeneratedInviteLink(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-muted)' }}><X size={20} /></button>
+            <button onClick={() => setGeneratedInviteLink(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={20} /></button>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', marginBottom: '1rem' }}>
                 <LinkIcon size={28} />
               </div>
               <h3 style={{ margin: '0 0 0.5rem 0' }}>Invite Link Generated!</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>This is a single-use link. When a student registers using this link, they will be automatically added to the selected class/department.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Share this link with your students. It will expire based on your selected timeframe.</p>
             </div>
-            
+
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '0.5rem 0.5rem 0.5rem 1rem' }}>
               <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-main)', fontSize: '0.9rem' }}>
                 {generatedInviteLink}
               </div>
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 onClick={() => {
                   navigator.clipboard.writeText(generatedInviteLink);

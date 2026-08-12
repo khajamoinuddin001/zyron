@@ -131,3 +131,29 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// DELETE /api/v1/platform/organizations?organizationId=... - delete an org and its related data
+export async function DELETE(req: NextRequest) {
+  try {
+    const authUser = requireSuperAdmin(req)
+    if (authUser instanceof NextResponse) return authUser
+
+    const organizationId = req.nextUrl.searchParams.get('organizationId')
+
+    if (!organizationId) {
+      return NextResponse.json({ error: 'organizationId is required' }, { status: 400 })
+    }
+
+    // Since some relations like OrganizationMember and OrganizationModule
+    // don't have onDelete: Cascade, we need to delete them manually in a transaction.
+    await prisma.$transaction([
+      prisma.organizationMember.deleteMany({ where: { organizationId } }),
+      prisma.organizationModule.deleteMany({ where: { organizationId } }),
+      prisma.organization.delete({ where: { id: organizationId } })
+    ])
+
+    return NextResponse.json({ success: true, organizationId })
+  } catch (error: any) {
+    console.error('[PLATFORM_ORGS_DELETE_ERROR]', error)
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
+  }
+}

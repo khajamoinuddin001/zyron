@@ -13,14 +13,14 @@ const Register: React.FC = () => {
     password: '',
     confirmPassword: '',
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,7 +29,7 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -37,27 +37,17 @@ const Register: React.FC = () => {
 
     try {
       setLoading(true);
-      
-      const { confirmPassword, ...registerData } = formData;
-      const data = await api.post<{ token: string, user: any }>('/auth/register', registerData);
-      
-      // Update store and local storage
-      login(
-        {
-          id: data.user.id,
-          email: data.user.email,
-          firstName: data.user.firstName,
-          lastName: data.user.lastName,
-          isSuperAdmin: data.user.isSuperAdmin,
-          organization: data.user.organization,
-          role: data.user.isSuperAdmin ? 'SUPER_ADMIN' : (data.user.role || 'ORG_ADMIN'),
-          activeModules: data.user.activeModules || [],
-        },
-        data.token
-      );
 
-      navigate('/dashboard');
-      
+      const { confirmPassword, ...registerData } = formData;
+      const data = await api.post<{ message: string, status: string, user: any }>('/auth/register', registerData);
+
+      if (data.status === 'PENDING') {
+        setIsSuccess(true);
+      } else {
+        navigate('/login');
+      }
+
+
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -65,19 +55,37 @@ const Register: React.FC = () => {
     }
   };
 
+  if (isSuccess) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+        <div className="glass-panel animate-float" style={{ width: '100%', maxWidth: '500px', padding: '4rem 2rem', position: 'relative', zIndex: 10, textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', marginBottom: '1.5rem' }}>
+            <CheckCircle size={40} />
+          </div>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Registration Submitted!</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.6 }}>
+            Your organization has been successfully registered and is currently pending approval. You will be able to log in once your account is activated.
+          </p>
+          <Link to="/login" className="btn btn-primary" style={{ display: 'inline-flex', padding: '0.75rem 2rem' }}>
+            Return to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
       padding: '2rem'
     }}>
-      <div className="hero-bg-glow" style={{ opacity: 0.5 }}></div>
-      
-      <div className="glass-panel animate-float" style={{ 
-        width: '100%', 
-        maxWidth: '500px', 
+
+      <div className="glass-panel animate-float" style={{
+        width: '100%',
+        maxWidth: '500px',
         padding: '3rem 2rem',
         position: 'relative',
         zIndex: 10
@@ -91,11 +99,11 @@ const Register: React.FC = () => {
         </div>
 
         {error && (
-          <div style={{ 
-            backgroundColor: 'rgba(239, 68, 68, 0.1)', 
-            borderLeft: '4px solid #ef4444', 
-            color: '#f87171', 
-            padding: '1rem', 
+          <div style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderLeft: '4px solid #ef4444',
+            color: '#f87171',
+            padding: '1rem',
             borderRadius: 'var(--radius-sm)',
             marginBottom: '1.5rem',
             display: 'flex',
@@ -107,17 +115,17 @@ const Register: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          
+
           <div>
             <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Organization Name</label>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
                 <Building size={18} />
               </div>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="organizationName"
-                placeholder="Acme Corp" 
+                placeholder="Acme Corp"
                 value={formData.organizationName}
                 onChange={handleChange}
                 style={{
@@ -130,7 +138,7 @@ const Register: React.FC = () => {
                   fontFamily: 'inherit',
                   fontSize: '1rem'
                 }}
-                required 
+                required
               />
             </div>
           </div>
@@ -142,10 +150,10 @@ const Register: React.FC = () => {
                 <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
                   <User size={18} />
                 </div>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="firstName"
-                  placeholder="John" 
+                  placeholder="John"
                   value={formData.firstName}
                   onChange={handleChange}
                   style={{
@@ -158,7 +166,7 @@ const Register: React.FC = () => {
                     fontFamily: 'inherit',
                     fontSize: '1rem'
                   }}
-                  required 
+                  required
                 />
               </div>
             </div>
@@ -168,10 +176,10 @@ const Register: React.FC = () => {
                 <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
                   <User size={18} />
                 </div>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="lastName"
-                  placeholder="Doe" 
+                  placeholder="Doe"
                   value={formData.lastName}
                   onChange={handleChange}
                   style={{
@@ -184,7 +192,7 @@ const Register: React.FC = () => {
                     fontFamily: 'inherit',
                     fontSize: '1rem'
                   }}
-                  required 
+                  required
                 />
               </div>
             </div>
@@ -196,10 +204,10 @@ const Register: React.FC = () => {
               <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
                 <Mail size={18} />
               </div>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 name="email"
-                placeholder="admin@acme.com" 
+                placeholder="admin@acme.com"
                 value={formData.email}
                 onChange={handleChange}
                 style={{
@@ -212,7 +220,7 @@ const Register: React.FC = () => {
                   fontFamily: 'inherit',
                   fontSize: '1rem'
                 }}
-                required 
+                required
               />
             </div>
           </div>
@@ -223,10 +231,10 @@ const Register: React.FC = () => {
               <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
                 <Lock size={18} />
               </div>
-              <input 
-                type={showPassword ? 'text' : 'password'} 
+              <input
+                type={showPassword ? 'text' : 'password'}
                 name="password"
-                placeholder="••••••••" 
+                placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
                 style={{
@@ -239,10 +247,10 @@ const Register: React.FC = () => {
                   fontFamily: 'inherit',
                   fontSize: '1rem'
                 }}
-                required 
+                required
                 minLength={8}
               />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -250,10 +258,10 @@ const Register: React.FC = () => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            <div style={{ 
-              maxHeight: formData.password.length > 0 ? '200px' : '0px', 
-              opacity: formData.password.length > 0 ? 1 : 0, 
-              overflow: 'hidden', 
+            <div style={{
+              maxHeight: formData.password.length > 0 ? '200px' : '0px',
+              opacity: formData.password.length > 0 ? 1 : 0,
+              overflow: 'hidden',
               transition: 'all 0.3s ease',
               marginTop: formData.password.length > 0 ? '0.75rem' : '0'
             }}>
@@ -277,17 +285,17 @@ const Register: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Confirm Password</label>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
                 <Lock size={18} />
               </div>
-              <input 
-                type={showConfirmPassword ? 'text' : 'password'} 
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
-                placeholder="••••••••" 
+                placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 style={{
@@ -300,10 +308,10 @@ const Register: React.FC = () => {
                   fontFamily: 'inherit',
                   fontSize: '1rem'
                 }}
-                required 
+                required
                 minLength={8}
               />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -313,9 +321,9 @@ const Register: React.FC = () => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
-            className="btn btn-primary" 
+          <button
+            type="submit"
+            className="btn btn-primary"
             style={{ width: '100%', marginTop: '0.5rem', justifyContent: 'center' }}
             disabled={loading}
           >

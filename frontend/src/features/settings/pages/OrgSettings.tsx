@@ -18,15 +18,15 @@ export const THEMES = [
 ];
 
 export function applyTheme(themeKey: string | null | undefined) {
-  const [color, mode] = (themeKey || 'indigo:dark').split(':');
+  const [color, mode] = (themeKey || 'indigo:light').split(':');
   const theme = THEMES.find(t => t.key === color) || THEMES[0];
   document.documentElement.style.setProperty('--primary', theme.primary);
   document.documentElement.style.setProperty('--secondary', theme.secondary);
   
-  if (mode === 'light') {
-    document.documentElement.classList.add('theme-light');
+  if (mode === 'dark') {
+    document.documentElement.classList.add('theme-dark');
   } else {
-    document.documentElement.classList.remove('theme-light');
+    document.documentElement.classList.remove('theme-dark');
   }
 }
 
@@ -48,7 +48,7 @@ const OrgSettings: React.FC = () => {
       setOrgName(user.organization.name || '');
       setLogoPreview(user.organization.logoUrl || null);
       
-      const themeKey = user.organization.theme || 'indigo:dark';
+      const themeKey = user.organization.theme || 'indigo:light';
       const [color, mode] = themeKey.split(':');
       setSelectedThemeColor(color || 'indigo');
       setSelectedThemeMode(mode || 'dark');

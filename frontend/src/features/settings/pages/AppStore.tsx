@@ -3,7 +3,7 @@ import { useAuthStore } from '../../../store/auth.store';
 import { api } from '../../../services/api';
 import {
   Users, MessageSquare, CreditCard, Calendar, BookOpen, Truck,
-  Package, Home, Download, Trash2, CalendarDays
+  Package, Home, Download, Trash2, CalendarDays, Contact
 } from 'lucide-react';
 
 // ─── Module catalogue ────────────────────────────────────────────────────────
@@ -11,6 +11,7 @@ const ALL_MODULES = [
   { key: 'attendance',   name: 'Attendance',     desc: 'Real-time biometric & manual tracking.',          icon: <Users        size={24} /> },
   { key: 'messaging',   name: 'Messaging',       desc: 'Send WhatsApp, SMS and email broadcasts.',        icon: <MessageSquare size={24} /> },
   { key: 'calendar',    name: 'Calendar',        desc: 'Manage events, holidays, and schedules.',         icon: <CalendarDays size={24} /> },
+  { key: 'contacts',    name: 'Contacts',        desc: 'Manage staff, student, and parent contact information.', icon: <Contact    size={24} /> },
   { key: 'accounts',    name: 'Accounts & Fees', desc: 'Automated fee collection & payroll.',             icon: <CreditCard    size={24} /> },
   { key: 'examinations',name: 'Examinations',    desc: 'Report cards, tickets & schedules.',              icon: <Calendar      size={24} /> },
   { key: 'library',     name: 'Library',         desc: 'Complete library management.',                    icon: <BookOpen      size={24} /> },
@@ -19,7 +20,7 @@ const ALL_MODULES = [
   { key: 'hostel',      name: 'Hostel',          desc: 'Manage room allocations and visitors.',           icon: <Home         size={24} /> },
 ];
 
-const SUPPORTED = new Set(['attendance', 'messaging', 'accounts', 'calendar']);
+const SUPPORTED = new Set(['attendance', 'messaging', 'calendar', 'contacts']);
 
 const AppStore: React.FC = () => {
   const user           = useAuthStore(s => s.user);

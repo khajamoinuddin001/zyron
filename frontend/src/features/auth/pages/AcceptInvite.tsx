@@ -10,7 +10,8 @@ export const AcceptInvite: React.FC = () => {
   const login = useAuthStore(state => state.login);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [inviteDetails, setInviteDetails] = useState<any>(null);
 
   const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ export const AcceptInvite: React.FC = () => {
         const res = await api.get<{ invite: any }>(`/organizations/invites/${token}`);
         setInviteDetails(res.invite);
       } catch (err: any) {
-        setError(err.message || 'Invalid or expired invite link.');
+        setPageError(err.message || 'Invalid or expired invite link.');
       } finally {
         setLoading(false);
       }
@@ -40,7 +41,7 @@ export const AcceptInvite: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const payload = {
@@ -53,8 +54,8 @@ export const AcceptInvite: React.FC = () => {
       setSubmitStatus('success');
       
     } catch (err: any) {
-      setError(err.message || 'Failed to register.');
-      setSubmitStatus('error');
+      setSubmitError(err.message || 'Failed to register.');
+      setSubmitStatus('idle'); // Keep form visible for correction
       setSubmitting(false);
     }
   };
@@ -67,12 +68,12 @@ export const AcceptInvite: React.FC = () => {
     );
   }
 
-  if (error || !inviteDetails) {
+  if (pageError || !inviteDetails) {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-dark)' }}>
         <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', maxWidth: '400px', width: '90%' }}>
           <h2 style={{ margin: '0 0 1rem 0', color: 'var(--danger)' }}>Invite Error</h2>
-          <p style={{ color: 'var(--text-muted)' }}>{error || 'Something went wrong.'}</p>
+          <p style={{ color: 'var(--text-muted)' }}>{pageError || 'Something went wrong.'}</p>
         </div>
       </div>
     );
@@ -96,9 +97,9 @@ export const AcceptInvite: React.FC = () => {
           </p>
         </div>
 
-        {error && submitStatus === 'idle' && (
+        {submitError && submitStatus === 'idle' && (
           <div style={{ padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '1.5rem', textAlign: 'center' }}>
-            {error}
+            {submitError}
           </div>
         )}
 
@@ -170,8 +171,8 @@ export const AcceptInvite: React.FC = () => {
                 <XCircle size={40} />
               </div>
               <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.4rem' }}>Registration Failed</h3>
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem' }}>{error}</p>
-              <button onClick={() => { setSubmitStatus('idle'); setError(null); }} className="btn btn-primary" style={{ padding: '0.75rem 2rem', fontSize: '1rem' }}>
+              <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem' }}>{submitError}</p>
+              <button onClick={() => { setSubmitStatus('idle'); setSubmitError(null); }} className="btn btn-primary" style={{ padding: '0.75rem 2rem', fontSize: '1rem' }}>
                 Try Again
               </button>
             </div>

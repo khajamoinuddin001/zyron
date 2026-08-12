@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, CreditCard, MessageSquare, BookOpen, Settings, LogOut, Shield, FileText, AlertTriangle, X, Menu, Calendar, Award } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, MessageSquare, BookOpen, Settings, LogOut, Shield, FileText, AlertTriangle, X, Menu, Calendar, Award, Store, Package } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { api } from '../services/api';
 import { applyTheme } from '../features/settings/pages/OrgSettings';
@@ -136,6 +136,16 @@ const DashboardLayout: React.FC = () => {
             </Link>
           )}
 
+          {user?.activeModules?.includes('contacts') && (
+            <Link to="/dashboard/contacts" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
+              <Users size={20} /> Contacts
+            </Link>
+          )}
+
+          <Link to="/dashboard/apps" className={`btn btn-outline ${location.pathname === '/dashboard/apps' ? 'active' : ''}`} style={{ justifyContent: 'flex-start', border: 'none', color: location.pathname === '/dashboard/apps' ? 'var(--primary)' : 'inherit' }}>
+            <Package size={20} /> App
+          </Link>
+
 
           <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {user?.isSuperAdmin && (
@@ -151,13 +161,6 @@ const DashboardLayout: React.FC = () => {
                   style={{ justifyContent: 'flex-start', border: 'none', color: location.pathname === '/dashboard/team-roles' ? 'var(--primary)' : 'inherit' }}
                 >
                   <Shield size={20} /> Team & Roles
-                </Link>
-                <Link
-                  to="/dashboard/app-store"
-                  className={`btn btn-outline ${location.pathname === '/dashboard/app-store' ? 'active' : ''}`}
-                  style={{ justifyContent: 'flex-start', border: 'none', color: location.pathname === '/dashboard/app-store' ? 'var(--primary)' : 'inherit' }}
-                >
-                  <Settings size={20} /> App Store
                 </Link>
                 <Link
                   to="/dashboard/settings"

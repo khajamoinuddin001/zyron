@@ -12,6 +12,7 @@ import SuperAdminDashboard from '../platform-admin/dashboard/Dashboard';
 import Subscriptions from '../platform-admin/subscriptions/Subscriptions';
 import OrganizationsList from '../platform-admin/organizations/OrganizationsList';
 import OrgDashboard from '../features/dashboard/pages/Dashboard';
+import AppsPage from '../features/dashboard/pages/AppsPage';
 import TopAbsentStudents from '../features/dashboard/pages/TopAbsentStudents';
 import AppStore from '../features/settings/pages/AppStore';
 import TeamRoles from '../features/settings/pages/TeamRoles';
@@ -20,6 +21,7 @@ import ProfileSettings from '../features/settings/pages/ProfileSettings';
 import AttendanceDashboard from '../features/attendance/pages/AttendanceDashboard';
 import MessagingApp from '../features/messaging/pages/MessagingApp';
 import { CalendarApp } from '../features/calendar/pages/CalendarApp';
+import ContactsApp from '../features/contacts/pages/ContactsApp';
 
 const ProtectedRoute = ({ allowedRoles, children }: { allowedRoles: Role[], children?: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -90,6 +92,7 @@ export const router = createBrowserRouter([
             element: <DashboardLayout />,
             children: [
               { path: '', element: <OrgDashboard /> },
+              { path: 'apps', element: <AppsPage /> },
               { path: 'top-absent', element: <TopAbsentStudents /> },
               { path: 'profile', element: <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT', 'PARENT']}><ProfileSettings /></ProtectedRoute> },
               { path: 'app-store', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><AppStore /></ProtectedRoute> },
@@ -97,7 +100,8 @@ export const router = createBrowserRouter([
               { path: 'settings', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><OrgSettings /></ProtectedRoute> },
               { path: 'attendance', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><AttendanceDashboard /></ProtectedRoute> },
               { path: 'messaging', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><MessagingApp /></ProtectedRoute> },
-              { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT']}><CalendarApp /></ProtectedRoute> }
+              { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT']}><CalendarApp /></ProtectedRoute> },
+              { path: 'contacts', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactsApp /></ProtectedRoute> }
             ]
           }
         ],

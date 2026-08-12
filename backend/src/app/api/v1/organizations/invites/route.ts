@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { groupId } = body
+    const { groupId, expiresInHours } = body
 
     if (!groupId) {
       return NextResponse.json({ error: 'groupId is required' }, { status: 400 })
@@ -39,13 +39,21 @@ export async function POST(req: NextRequest) {
     // Generate a secure random token
     const token = crypto.randomBytes(32).toString('hex')
 
+    // Calculate expiresAt if expiresInHours is provided
+    let expiresAt: Date | null = null;
+    if (expiresInHours) {
+      expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + parseInt(expiresInHours, 10));
+    }
+
     // Create the invite
     const invite = await prisma.organizationInvite.create({
       data: {
         organizationId: authUser.organizationId,
         token,
         role: 'STUDENT',
-        groupId
+        groupId,
+        expiresAt
       }
     })
 

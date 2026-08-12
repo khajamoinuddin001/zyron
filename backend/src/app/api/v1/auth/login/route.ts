@@ -56,11 +56,11 @@ export async function POST(req: NextRequest) {
     if (!isValid) {
       const newAttempts = user.failedLoginAttempts + 1;
       let lockedUntil = null;
-      
+
       if (newAttempts >= 10) {
         lockedUntil = new Date(Date.now() + 5 * 60 * 1000); // Lock for 5 minutes
       }
-      
+
       await prisma.user.update({
         where: { id: user.id },
         data: {
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       if (lockedUntil) {
         return NextResponse.json({ error: 'Your account is locked due to too many failed attempts. Try again in 5 minutes.' }, { status: 429 })
       }
-      
+
       const attemptsRemaining = 10 - newAttempts;
       return NextResponse.json({ error: `Invalid credentials. You have ${attemptsRemaining} attempt${attemptsRemaining === 1 ? '' : 's'} remaining before your account is locked.` }, { status: 401 })
     }
@@ -95,6 +95,10 @@ export async function POST(req: NextRequest) {
 
     if (!user.isSuperAdmin && activeMembership?.organization?.status === 'SUSPENDED') {
       return NextResponse.json({ error: 'Your organization account has been suspended. Please contact support.' }, { status: 403 })
+    }
+
+    if (!user.isSuperAdmin && activeMembership?.organization?.status === 'PENDING') {
+      return NextResponse.json({ error: 'Your organization is pending approved!.' }, { status: 403 })
     }
 
     if (activeMembership?.role === 'STAFF' && activeMembership?.customRole && !activeMembership.customRole.isActive) {

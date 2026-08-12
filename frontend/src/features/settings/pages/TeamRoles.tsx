@@ -226,10 +226,10 @@ const TeamRoles: React.FC = () => {
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '0.75rem 1rem',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: 'var(--bg-card)',
     border: '1px solid var(--border-light)',
     borderRadius: 'var(--radius-md)',
-    color: 'white',
+    color: 'var(--text-main)',
     fontFamily: 'inherit',
     fontSize: '0.95rem',
     boxSizing: 'border-box',
@@ -378,7 +378,7 @@ const TeamRoles: React.FC = () => {
           style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '1rem' }}
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '520px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '520px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', overflowY: 'auto', backgroundColor: 'var(--bg-darker)' }}>
             <button onClick={closeModal} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
               <X size={22} />
             </button>
@@ -468,7 +468,7 @@ const TeamRoles: React.FC = () => {
           style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '1rem' }}
           onClick={(e) => { if (e.target === e.currentTarget) closeStaffModal(); }}
         >
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '520px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '520px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', overflowY: 'auto', backgroundColor: 'var(--bg-darker)' }}>
             <button onClick={closeStaffModal} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
               <X size={22} />
             </button>
@@ -559,7 +559,7 @@ const TeamRoles: React.FC = () => {
           style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '1rem' }}
           onClick={(e) => { if (e.target === e.currentTarget) setIsViewMembersModalOpen(false); }}
         >
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '2.5rem', position: 'relative', maxHeight: '90vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-darker)' }}>
             <button onClick={() => setIsViewMembersModalOpen(false)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
               <X size={22} />
             </button>

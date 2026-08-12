@@ -3,20 +3,20 @@ import {
   Building2, CheckCircle, XCircle, Clock, Search,
   RefreshCw, Package, Users, Eye, TrendingUp,
   ShieldCheck, ShieldOff, Globe, ToggleLeft, ToggleRight,
-  Loader2, Edit2, Save, X
+  Loader2, Edit2, Save, X, Trash2
 } from 'lucide-react';
 import { api } from '../../services/api';
 
 // All available modules (must match AppStore catalogue)
 const ALL_MODULE_KEYS = [
-  { key: 'attendance',    name: 'Attendance',     price: 15 },
-  { key: 'messaging',     name: 'Messaging',      price: 10 },
-  { key: 'accounts',      name: 'Accounts & Fees',price: 25 },
-  { key: 'examinations',  name: 'Examinations',   price: 20 },
-  { key: 'library',       name: 'Library',        price: 15 },
-  { key: 'transport',     name: 'Transport',      price: 30 },
-  { key: 'inventory',     name: 'Inventory',      price: 20 },
-  { key: 'hostel',        name: 'Hostel',         price: 20 },
+  { key: 'attendance', name: 'Attendance', price: 15 },
+  { key: 'messaging', name: 'Messaging', price: 10 },
+  { key: 'accounts', name: 'Accounts & Fees', price: 25 },
+  { key: 'examinations', name: 'Examinations', price: 20 },
+  { key: 'library', name: 'Library', price: 15 },
+  { key: 'transport', name: 'Transport', price: 30 },
+  { key: 'inventory', name: 'Inventory', price: 20 },
+  { key: 'hostel', name: 'Hostel', price: 20 },
 ];
 
 interface OrgModule {
@@ -37,24 +37,24 @@ interface Organization {
 }
 
 const statusConfig = {
-  ACTIVE:    { color: '#4ade80', bg: 'rgba(74,222,128,0.1)',    icon: <CheckCircle size={12} />, label: 'Active' },
-  SUSPENDED: { color: '#f87171', bg: 'rgba(239,68,68,0.1)',     icon: <XCircle     size={12} />, label: 'Suspended' },
-  PENDING:   { color: '#facc15', bg: 'rgba(250,204,21,0.1)',    icon: <Clock       size={12} />, label: 'Pending' },
+  ACTIVE: { color: '#4ade80', bg: 'rgba(74,222,128,0.1)', icon: <CheckCircle size={12} />, label: 'Active' },
+  SUSPENDED: { color: '#f87171', bg: 'rgba(239,68,68,0.1)', icon: <XCircle size={12} />, label: 'Suspended' },
+  PENDING: { color: '#facc15', bg: 'rgba(250,204,21,0.1)', icon: <Clock size={12} />, label: 'Pending' },
 };
 
 const OrganizationsList: React.FC = () => {
-  const [orgs, setOrgs]                 = useState<Organization[]>([]);
+  const [orgs, setOrgs] = useState<Organization[]>([]);
   const [filteredOrgs, setFilteredOrgs] = useState<Organization[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [actionLoading, setAL]          = useState<string | null>(null);
-  const [search, setSearch]             = useState('');
-  const [statusFilter, setSF]           = useState<'ALL' | 'ACTIVE' | 'SUSPENDED' | 'PENDING'>('ALL');
-  const [detailOrg, setDetailOrg]       = useState<Organization | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setAL] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setSF] = useState<'ALL' | 'ACTIVE' | 'SUSPENDED' | 'PENDING'>('ALL');
+  const [detailOrg, setDetailOrg] = useState<Organization | null>(null);
 
   // Domain editing
   const [editingDomain, setEditingDomain] = useState(false);
-  const [domainInput, setDomainInput]     = useState('');
-  const [savingDomain, setSavingDomain]   = useState(false);
+  const [domainInput, setDomainInput] = useState('');
+  const [savingDomain, setSavingDomain] = useState(false);
 
   // Module action loading: "key-orgId"
   const [moduleLoading, setML] = useState<string | null>(null);
@@ -99,6 +99,20 @@ const OrganizationsList: React.FC = () => {
     }
   };
 
+  const handleDeleteOrg = async (org: Organization) => {
+    if (!window.confirm(`WARNING: Are you absolutely sure you want to DELETE "${org.name}"?\n\nThis will permanently delete ALL data associated with this organization. This action cannot be undone.`)) return;
+    setAL(org.id);
+    try {
+      await api.delete(`/platform/organizations?organizationId=${org.id}`);
+      setOrgs(prev => prev.filter(o => o.id !== org.id));
+      if (detailOrg?.id === org.id) setDetailOrg(null);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete organization');
+    } finally {
+      setAL(null);
+    }
+  };
+
   const handleSaveDomain = async () => {
     if (!detailOrg) return;
     setSavingDomain(true);
@@ -117,7 +131,7 @@ const OrganizationsList: React.FC = () => {
 
   const handleModuleToggle = async (orgId: string, moduleKey: string, isCurrentlyActive: boolean) => {
     const action = isCurrentlyActive ? 'revoke' : 'grant';
-    const label  = isCurrentlyActive ? 'revoke access to' : 'grant access to';
+    const label = isCurrentlyActive ? 'revoke access to' : 'grant access to';
     if (!window.confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} the "${moduleKey}" module for this org?`)) return;
     const loadKey = `${orgId}-${moduleKey}`;
     setML(loadKey);
@@ -150,9 +164,9 @@ const OrganizationsList: React.FC = () => {
   };
 
   // Revenue stats
-  const totalRevenue   = orgs.reduce((sum, o) => sum + o.modules.filter(m => m.status === 'ACTIVE').reduce((ms, m) => ms + m.module.monthlyPrice, 0), 0);
-  const activeCount    = orgs.filter(o => o.status === 'ACTIVE').length;
-  const pendingCount   = orgs.filter(o => o.status === 'PENDING').length;
+  const totalRevenue = orgs.reduce((sum, o) => sum + o.modules.filter(m => m.status === 'ACTIVE').reduce((ms, m) => ms + m.module.monthlyPrice, 0), 0);
+  const activeCount = orgs.filter(o => o.status === 'ACTIVE').length;
+  const pendingCount = orgs.filter(o => o.status === 'PENDING').length;
 
   const cardStyle: React.CSSProperties = { padding: '1.5rem', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' };
   const inp: React.CSSProperties = { padding: '0.6rem 0.9rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-light)', borderRadius: '8px', color: 'var(--text-main)', fontFamily: 'inherit', fontSize: '0.9rem', outline: 'none', flex: 1 };
@@ -217,110 +231,123 @@ const OrganizationsList: React.FC = () => {
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No organizations match your search.</div>
         ) : (
           <>
-          <div className="hide-mobile">
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                {['Organization', 'Domain', 'Status', 'Members', 'Modules', 'Joined', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
+            <div className="hide-mobile">
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                    {['Organization', 'Domain', 'Status', 'Members', 'Modules', 'Joined', 'Actions'].map(h => (
+                      <th key={h} style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrgs.map(org => {
+                    const cfg = statusConfig[org.status];
+                    const revenue = org.modules.filter(m => m.status === 'ACTIVE').reduce((s, m) => s + m.module.monthlyPrice, 0);
+                    return (
+                      <tr key={org.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0 }}>
+                              {org.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{org.name}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '1rem', color: org.domain ? 'var(--text-main)' : 'var(--text-muted)', fontSize: '0.85rem' }}>
+                          {org.domain ? <><Globe size={12} style={{ display: 'inline', marginRight: '0.3rem' }} />{org.domain}</> : '—'}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0.75rem', borderRadius: '99px', backgroundColor: cfg.bg, color: cfg.color, fontSize: '0.8rem', fontWeight: 500 }}>
+                            {cfg.icon} {cfg.label}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem', color: 'var(--text-muted)' }}><Users size={14} style={{ display: 'inline', marginRight: '0.3rem' }} />{org._count.members}</td>
+                        <td style={{ padding: '1rem', color: 'var(--text-muted)' }}><Package size={14} style={{ display: 'inline', marginRight: '0.3rem' }} />{org._count.modules}</td>
+                        <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(org.createdAt).toLocaleDateString()}</td>
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button className="btn btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }} onClick={() => { setDetailOrg(org); setDomainInput(org.domain || ''); setEditingDomain(false); }}>
+                              <Eye size={14} /> Manage
+                            </button>
+                            {org.status === 'SUSPENDED' ? (
+                              <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.3)' }} onClick={() => handleStatusChange(org, 'ACTIVE')}>
+                                {actionLoading === org.id ? '…' : 'Activate'}
+                              </button>
+                            ) : org.status === 'PENDING' ? (
+                              <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.3)' }} onClick={() => handleStatusChange(org, 'ACTIVE')}>
+                                {actionLoading === org.id ? '…' : 'Approve'}
+                              </button>
+                            ) : (
+                              <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }} onClick={() => handleStatusChange(org, 'SUSPENDED')}>
+                                {actionLoading === org.id ? '…' : 'Suspend'}
+                              </button>
+                            )}
+                            <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }} onClick={() => handleDeleteOrg(org)}>
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="show-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
               {filteredOrgs.map(org => {
-                const cfg     = statusConfig[org.status];
-                const revenue = org.modules.filter(m => m.status === 'ACTIVE').reduce((s, m) => s + m.module.monthlyPrice, 0);
+                const cfg = statusConfig[org.status];
                 return (
-                  <tr key={org.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td style={{ padding: '1rem' }}>
+                  <div key={org.id} style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0 }}>
                           {org.name.charAt(0).toUpperCase()}
                         </div>
-                        <span style={{ fontWeight: 600 }}>{org.name}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem', color: org.domain ? 'var(--text-main)' : 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      {org.domain ? <><Globe size={12} style={{ display: 'inline', marginRight: '0.3rem' }}/>{org.domain}</> : '—'}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0.75rem', borderRadius: '99px', backgroundColor: cfg.bg, color: cfg.color, fontSize: '0.8rem', fontWeight: 500 }}>
-                        {cfg.icon} {cfg.label}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}><Users size={14} style={{ display: 'inline', marginRight: '0.3rem' }}/>{org._count.members}</td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}><Package size={14} style={{ display: 'inline', marginRight: '0.3rem' }}/>{org._count.modules}</td>
-                    <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(org.createdAt).toLocaleDateString()}</td>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="btn btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }} onClick={() => { setDetailOrg(org); setDomainInput(org.domain || ''); setEditingDomain(false); }}>
-                          <Eye size={14} /> Manage
-                        </button>
-                        {org.status === 'SUSPENDED' ? (
-                          <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.3)' }} onClick={() => handleStatusChange(org, 'ACTIVE')}>
-                            {actionLoading === org.id ? '…' : 'Activate'}
-                          </button>
-                        ) : (
-                          <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }} onClick={() => handleStatusChange(org, 'SUSPENDED')}>
-                            {actionLoading === org.id ? '…' : 'Suspend'}
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Cards View */}
-          <div className="show-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
-            {filteredOrgs.map(org => {
-              const cfg = statusConfig[org.status];
-              const revenue = org.modules.filter(m => m.status === 'ACTIVE').reduce((s, m) => s + m.module.monthlyPrice, 0);
-              return (
-                <div key={org.id} style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0 }}>
-                        {org.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{org.name}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                          {org.domain ? <><Globe size={10} style={{ display: 'inline', marginRight: '0.2rem' }}/>{org.domain}</> : 'No domain'}
+                        <div>
+                          <div style={{ fontWeight: 600 }}>{org.name}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                            {org.domain ? <><Globe size={10} style={{ display: 'inline', marginRight: '0.2rem' }} />{org.domain}</> : 'No domain'}
+                          </div>
                         </div>
                       </div>
+                      <span style={{ padding: '0.2rem 0.5rem', borderRadius: '99px', backgroundColor: cfg.bg, color: cfg.color, fontSize: '0.75rem', fontWeight: 600 }}>
+                        {cfg.label}
+                      </span>
                     </div>
-                    <span style={{ padding: '0.2rem 0.5rem', borderRadius: '99px', backgroundColor: cfg.bg, color: cfg.color, fontSize: '0.75rem', fontWeight: 600 }}>
-                      {cfg.label}
-                    </span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
-                    <div style={{ color: 'var(--text-muted)' }}><Users size={14} style={{ display: 'inline', marginRight: '0.3rem' }}/>{org._count.members} Members</div>
-                    <div style={{ color: 'var(--text-muted)' }}><Package size={14} style={{ display: 'inline', marginRight: '0.3rem' }}/>{org._count.modules} Modules</div>
-                  </div>
 
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="btn btn-outline" style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }} onClick={() => { setDetailOrg(org); setDomainInput(org.domain || ''); setEditingDomain(false); }}>
-                      Manage
-                    </button>
-                    {org.status === 'SUSPENDED' ? (
-                      <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.3)' }} onClick={() => handleStatusChange(org, 'ACTIVE')}>
-                        {actionLoading === org.id ? '…' : 'Activate'}
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                      <div style={{ color: 'var(--text-muted)' }}><Users size={14} style={{ display: 'inline', marginRight: '0.3rem' }} />{org._count.members} Members</div>
+                      <div style={{ color: 'var(--text-muted)' }}><Package size={14} style={{ display: 'inline', marginRight: '0.3rem' }} />{org._count.modules} Modules</div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn btn-outline" style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }} onClick={() => { setDetailOrg(org); setDomainInput(org.domain || ''); setEditingDomain(false); }}>
+                        Manage
                       </button>
-                    ) : (
-                      <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }} onClick={() => handleStatusChange(org, 'SUSPENDED')}>
-                        {actionLoading === org.id ? '…' : 'Suspend'}
+                      {org.status === 'SUSPENDED' ? (
+                        <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.3)' }} onClick={() => handleStatusChange(org, 'ACTIVE')}>
+                          {actionLoading === org.id ? '…' : 'Activate'}
+                        </button>
+                      ) : org.status === 'PENDING' ? (
+                        <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.3)' }} onClick={() => handleStatusChange(org, 'ACTIVE')}>
+                          {actionLoading === org.id ? '…' : 'Approve'}
+                        </button>
+                      ) : (
+                        <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }} onClick={() => handleStatusChange(org, 'SUSPENDED')}>
+                          {actionLoading === org.id ? '…' : 'Suspend'}
+                        </button>
+                      )}
+                      <button className="btn btn-outline" disabled={actionLoading === org.id} style={{ padding: '0.6rem', fontSize: '0.85rem', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }} onClick={() => handleDeleteOrg(org)}>
+                        <Trash2 size={16} />
                       </button>
-                    )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
           </>
         )}
       </div>
@@ -328,7 +355,7 @@ const OrganizationsList: React.FC = () => {
       {/* ── Detail / Manage Modal ── */}
       {detailOrg && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(14px)', padding: '1rem' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '620px', padding: '2.5rem', position: 'relative', borderRadius: '20px', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '620px', padding: '2.5rem', position: 'relative', borderRadius: '20px', maxHeight: '90vh', overflowY: 'auto', backgroundColor: 'var(--bg-darker)' }}>
             <button onClick={() => setDetailOrg(null)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
               <X size={22} />
             </button>
@@ -360,7 +387,7 @@ const OrganizationsList: React.FC = () => {
                   <button className="btn btn-outline" style={{ padding: '0.6rem 0.75rem', fontSize: '0.85rem' }} onClick={() => setEditingDomain(false)}><X size={14} /></button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1rem', backgroundColor: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
                   <Globe size={16} color="var(--primary)" />
                   <span style={{ flex: 1, fontSize: '0.95rem' }}>{detailOrg.domain || <span style={{ color: 'var(--text-muted)' }}>No domain configured</span>}</span>
                   <button onClick={() => { setDomainInput(detailOrg.domain || ''); setEditingDomain(true); }} className="btn btn-outline" style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}>
@@ -369,18 +396,18 @@ const OrganizationsList: React.FC = () => {
                 </div>
               )}
               <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Used for white-label routing and email domain validation. E.g. <code style={{ backgroundColor: 'rgba(255,255,255,0.07)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>school.edminz.io</code>
+                Used for white-label routing and email domain validation. E.g. <code style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>school.edminz.io</code>
               </p>
             </div>
 
             {/* Stats row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
               {[
-                { label: 'Members',       value: `${detailOrg._count.members} users`, color: 'var(--text-main)' },
-                { label: 'Active Modules',value: `${detailOrg._count.modules}`,       color: 'var(--text-main)' },
-                { label: 'Revenue/mo',    value: `$${detailOrg.modules.filter(m => m.status === 'ACTIVE').reduce((s, m) => s + m.module.monthlyPrice, 0)}`, color: '#4ade80' },
+                { label: 'Members', value: `${detailOrg._count.members} users`, color: 'var(--text-main)' },
+                { label: 'Active Modules', value: `${detailOrg._count.modules}`, color: 'var(--text-main)' },
+                { label: 'Revenue/mo', value: `$${detailOrg.modules.filter(m => m.status === 'ACTIVE').reduce((s, m) => s + m.module.monthlyPrice, 0)}`, color: '#4ade80' },
               ].map(item => (
-                <div key={item.label} style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '10px' }}>
+                <div key={item.label} style={{ padding: '1rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '10px' }}>
                   <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>{item.label}</p>
                   <p style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: item.color }}>{item.value}</p>
                 </div>
@@ -397,13 +424,13 @@ const OrganizationsList: React.FC = () => {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 {ALL_MODULE_KEYS.map(mod => {
-                  const installed  = detailOrg.modules.find(m => m.module.key === mod.key);
-                  const isActive   = installed?.status === 'ACTIVE';
-                  const loadKey    = `${detailOrg.id}-${mod.key}`;
-                  const isLoading  = moduleLoading === loadKey;
+                  const installed = detailOrg.modules.find(m => m.module.key === mod.key);
+                  const isActive = installed?.status === 'ACTIVE';
+                  const loadKey = `${detailOrg.id}-${mod.key}`;
+                  const isLoading = moduleLoading === loadKey;
 
                   return (
-                    <div key={mod.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: `1px solid ${isActive ? 'rgba(99,102,241,0.2)' : 'var(--border-light)'}`, transition: 'border-color 0.2s' }}>
+                    <div key={mod.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', backgroundColor: 'var(--bg-card)', borderRadius: '10px', border: `1px solid ${isActive ? 'var(--primary)' : 'var(--border-light)'}`, transition: 'border-color 0.2s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isActive ? '#4ade80' : 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
                         <div>
@@ -443,11 +470,18 @@ const OrganizationsList: React.FC = () => {
                 <button className="btn btn-primary" style={{ flex: 1 }} disabled={actionLoading === detailOrg.id} onClick={() => handleStatusChange(detailOrg, 'ACTIVE')}>
                   {actionLoading === detailOrg.id ? 'Processing…' : '✓ Activate Organization'}
                 </button>
+              ) : detailOrg.status === 'PENDING' ? (
+                <button className="btn btn-primary" style={{ flex: 1 }} disabled={actionLoading === detailOrg.id} onClick={() => handleStatusChange(detailOrg, 'ACTIVE')}>
+                  {actionLoading === detailOrg.id ? 'Processing…' : '✓ Approve Organization'}
+                </button>
               ) : (
                 <button className="btn btn-outline" style={{ flex: 1, color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }} disabled={actionLoading === detailOrg.id} onClick={() => handleStatusChange(detailOrg, 'SUSPENDED')}>
-                  {actionLoading === detailOrg.id ? 'Processing…' : 'Suspend Organization'}
+                  {actionLoading === detailOrg.id ? 'Processing…' : '✕ Suspend Organization'}
                 </button>
               )}
+              <button className="btn btn-outline" style={{ flex: 0, padding: '0 1.25rem', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }} disabled={actionLoading === detailOrg.id} onClick={() => handleDeleteOrg(detailOrg)}>
+                <Trash2 size={16} />
+              </button>
             </div>
           </div>
         </div>

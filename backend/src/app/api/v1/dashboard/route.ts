@@ -41,14 +41,39 @@ export async function GET(req: NextRequest) {
     // 2. Target Date Attendance
     const todayAttendance = await prisma.attendanceRecord.findMany({
       where: { ...attWhere, date: targetDate },
-      select: { status: true }
+      include: {
+        member: {
+          include: {
+            user: { select: { firstName: true, lastName: true, email: true } }
+          }
+        },
+        group: {
+          select: { name: true }
+        }
+      }
     });
 
     let presentToday = 0;
     let absentToday = 0;
+    const presentStudents: any[] = [];
+    const absentStudents: any[] = [];
+
     todayAttendance.forEach(a => {
-      if (a.status === 'PRESENT' || a.status === 'LATE') presentToday++;
-      else if (a.status === 'ABSENT') absentToday++;
+      const studentData = {
+        id: a.memberId,
+        name: `${a.member?.user?.firstName || ''} ${a.member?.user?.lastName || ''}`.trim(),
+        email: a.member?.user?.email,
+        className: a.group?.name || 'Unassigned',
+        status: a.status
+      };
+
+      if (a.status === 'PRESENT' || a.status === 'LATE') {
+        presentToday++;
+        presentStudents.push(studentData);
+      } else if (a.status === 'ABSENT') {
+        absentToday++;
+        absentStudents.push(studentData);
+      }
     });
 
     const presentPercent = totalStudents > 0 ? (presentToday / totalStudents) * 100 : 0;
@@ -220,7 +245,9 @@ export async function GET(req: NextRequest) {
       classesToday,
       attendanceTrend,
       topAbsentStudents,
-      recentActivity
+      recentActivity,
+      presentStudents,
+      absentStudents
     });
   } catch (error) {
     console.error('[DASHBOARD_GET_ERROR]', error)

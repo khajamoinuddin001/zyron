@@ -1,0 +1,149 @@
+/* Attendance Button responsive styles */
+.att-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.att-btn-mobile-text {
+  display: none;
+}
+
+.roster-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  background-color: var(--bg-card-hover);
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  gap: 1rem;
+}
+
+.roster-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.roster-info {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.roster-avatar {
+  width: 48px; 
+  height: 48px; 
+  border-radius: 50%; 
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-weight: 600; 
+  font-size: 1.1rem; 
+  color: white; 
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+  flex-shrink: 0;
+}
+
+.roster-name-container {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.roster-name {
+  font-weight: 600; 
+  font-size: 1.05rem; 
+  color: var(--text-main); 
+  margin-bottom: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roster-email {
+  font-size: 0.85rem; 
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roster-actions {
+  display: flex;
+  gap: 0.5rem;
+  background-color: var(--bg-darker);
+  padding: 0.4rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .att-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  
+  .att-btn .hide-mobile-flex, 
+  .att-btn .hide-mobile {
+    display: none !important;
+  }
+  
+  .att-btn .att-btn-mobile-text {
+    display: block !important;
+  }
+}
+  
+@media (max-width: 768px) {
+  .roster-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .roster-info {
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  .roster-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .roster-name {
+    font-size: 1rem;
+    white-space: normal; /* Allow full name to wrap and be fully visible */
+  }
+
+  .roster-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .att-btn {
+    flex: 1;
+    padding: 0.6rem 0.2rem;
+    font-size: 0.8rem;
+  }
+}

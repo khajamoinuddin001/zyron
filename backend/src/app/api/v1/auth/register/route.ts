@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { organizationName, domain, firstName, lastName, email, password } = body
+    const defaultModuleKeys: string[] = []
 
     if (!organizationName || !firstName || !lastName || !email || !password) {
       return NextResponse.json(
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
         data: {
           name: organizationName,
           domain: domain ? domain.trim().toLowerCase() : null,
-          status: 'ACTIVE',
+          status: 'PENDING',
         },
       })
 
@@ -83,7 +84,6 @@ export async function POST(req: NextRequest) {
       })
 
       // 4. Get default modules
-      const defaultModuleKeys = ['attendance', 'accounts', 'messaging']
       const platformModules = await tx.platformModule.findMany({
         where: { key: { in: defaultModuleKeys } },
       })
@@ -102,17 +102,9 @@ export async function POST(req: NextRequest) {
       return { user, org, membership }
     })
 
-    // Sign JWT
-    const token = signToken({
-      userId: result.user.id,
-      email: result.user.email,
-      isSuperAdmin: result.user.isSuperAdmin,
-      organizationId: result.org.id,
-      role: result.membership.role,
-    })
-
     return NextResponse.json({
-      token,
+      message: 'Registration successful. Your organization is pending approval by a Super Admin.',
+      status: 'PENDING',
       user: {
         id: result.user.id,
         email: result.user.email,

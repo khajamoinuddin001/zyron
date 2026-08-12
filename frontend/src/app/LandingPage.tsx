@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  MessageSquare, 
-  Users, 
-  CreditCard, 
-  Calendar, 
-  BookOpen, 
-  Truck, 
-  Package, 
-  Home, 
+import {
+  MessageSquare,
+  Users,
+  CreditCard,
+  Calendar,
+  BookOpen,
+  Truck,
+  Package,
+  Home,
   ArrowRight,
   ShieldCheck,
   Zap
@@ -89,7 +89,7 @@ const LandingPage: React.FC = () => {
             Everything you need to run your institution or business, seamlessly integrated into a single unified workspace.
           </p>
         </div>
-        
+
         <div className="bento-grid">
           {features.map((feature, idx) => (
             <div key={idx} className={`bento-item ${feature.className}`}>

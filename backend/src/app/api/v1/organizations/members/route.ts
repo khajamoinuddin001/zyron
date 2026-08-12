@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     const finalEmail = email ? email.toLowerCase().trim() : `${mobile}@edminz.local`;
 
-    const passwordCheck = validatePassword(password)
+    const passwordCheck = validatePassword(password, role !== 'STUDENT')
     if (!passwordCheck.valid) {
       return NextResponse.json({ error: passwordCheck.message }, { status: 400 })
     }
@@ -141,6 +141,7 @@ export async function GET(req: NextRequest) {
             email: true,
             firstName: true,
             lastName: true,
+            mobile: true,
           },
         },
         groups: {

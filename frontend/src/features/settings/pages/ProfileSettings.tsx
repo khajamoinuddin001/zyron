@@ -29,21 +29,16 @@ const ProfileSettings: React.FC = () => {
 
   React.useEffect(() => {
     if (user) {
-      setFirstName(user.firstName || '');
+      setFirstName(user.firstName);
       setLastName(user.lastName || '');
+      const themeKey = user.theme || user.organization?.theme || 'indigo:light';
+      const [color, mode] = themeKey.split(':');
+      setSelectedThemeColor(color || 'indigo');
+      setSelectedThemeMode(mode || 'light');
     }
   }, [user]);
 
   const hasNameChanged = firstName !== (user?.firstName || '') || lastName !== (user?.lastName || '');
-
-  React.useEffect(() => {
-    if (user) {
-      const themeKey = user.theme || user.organization?.theme || 'indigo:dark';
-      const [color, mode] = themeKey.split(':');
-      setSelectedThemeColor(color || 'indigo');
-      setSelectedThemeMode(mode || 'dark');
-    }
-  }, [user]);
 
   const handleThemeSave = async () => {
     setThemeSaving(true);

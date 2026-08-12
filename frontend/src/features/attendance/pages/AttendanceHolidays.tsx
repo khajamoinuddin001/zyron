@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { api } from '../../../services/api';
+import '../../../calendar-responsive.css';
 
 interface Holiday {
   id: string;
@@ -114,26 +115,22 @@ export const AttendanceHolidays: React.FC = () => {
       return (
         <div 
           key={i + 1} 
-          className="calendar-day" 
+          className="calendar-day-cell" 
           onClick={() => handleDayClick(date)}
           style={{ 
-            padding: '0.5rem', 
-            minHeight: '80px', 
-            border: '1px solid var(--border-light)',
             cursor: holiday ? 'default' : 'pointer',
-            backgroundColor: holiday ? 'rgba(244, 63, 94, 0.1)' : 'var(--bg-card)',
-            position: 'relative'
+            backgroundColor: holiday ? 'rgba(244, 63, 94, 0.1)' : 'var(--bg-card)'
           }}
         >
           <span style={{ fontWeight: 600, color: holiday ? '#f43f5e' : 'var(--text-main)' }}>{i + 1}</span>
           {holiday && (
-            <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#f43f5e', lineHeight: 1.2 }}>
+            <div className="holiday-text">
               {holiday.name}
               <button 
                 onClick={(e) => handleDeleteHoliday(holiday.id, e)}
-                style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'none', border: 'none', color: '#f43f5e', cursor: 'pointer' }}
+                style={{ position: 'absolute', top: '0.25rem', right: '0.25rem', background: 'none', border: 'none', color: '#f43f5e', cursor: 'pointer', padding: 0 }}
               >
-                <Trash2 size={14} />
+                <Trash2 size={12} />
               </button>
             </div>
           )}
@@ -145,8 +142,8 @@ export const AttendanceHolidays: React.FC = () => {
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+    <div className="glass-panel" style={{ padding: 'var(--spacing-lg)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h3 style={{ margin: 0 }}>Organization Holidays</h3>
           <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Declare holidays to block attendance submission.</p>
@@ -163,14 +160,19 @@ export const AttendanceHolidays: React.FC = () => {
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}><Loader2 className="animate-spin" /></div>
       ) : (
-        <div style={{ border: '1px solid var(--border-light)', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--border-light)' }}>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600, fontSize: '0.85rem' }}>{day}</div>
-            ))}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-            {renderCalendar()}
+        <div style={{ border: '1px solid var(--border-light)', borderRadius: '12px', overflow: 'hidden', width: '100%' }}>
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--border-light)' }}>
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="calendar-header-cell">
+                  <span className="calendar-hide-mobile">{day}</span>
+                  <span className="calendar-show-mobile">{day.charAt(0)}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+              {renderCalendar()}
+            </div>
           </div>
         </div>
       )}

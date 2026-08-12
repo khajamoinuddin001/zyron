@@ -5,34 +5,40 @@ import { requireSuperAdmin, requireAuth } from '@/core/auth/middleware'
 // GET /api/v1/organizations
 // Super admin gets all orgs; org admin gets their own
 export async function GET(req: NextRequest) {
-  const authUser = requireAuth(req)
-  if (authUser instanceof NextResponse) return authUser
+  try {
+    console.log("ACTUAL DB URL FROM NEXTJS:", process.env.DATABASE_URL);
+    const authUser = requireAuth(req)
+    if (authUser instanceof NextResponse) return authUser
 
-  if (authUser.isSuperAdmin) {
-    const organizations = await prisma.organization.findMany({
+    if (authUser.isSuperAdmin) {
+      const organizations = await prisma.organization.findMany({
+        include: {
+          members: { include: { user: true } },
+          modules: { include: { module: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+      return NextResponse.json({ organizations })
+    }
+
+    // Org admin — return only their organization
+    if (!authUser.organizationId) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 })
+    }
+
+    const organization = await prisma.organization.findUnique({
+      where: { id: authUser.organizationId },
       include: {
         members: { include: { user: true } },
         modules: { include: { module: true } },
       },
-      orderBy: { createdAt: 'desc' },
     })
-    return NextResponse.json({ organizations })
+
+    return NextResponse.json({ organizations: organization ? [organization] : [] })
+  } catch (error) {
+    console.error('[ORGS_GET_ERROR]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  // Org admin — return only their organization
-  if (!authUser.organizationId) {
-    return NextResponse.json({ error: 'No organization found' }, { status: 404 })
-  }
-
-  const organization = await prisma.organization.findUnique({
-    where: { id: authUser.organizationId },
-    include: {
-      members: { include: { user: true } },
-      modules: { include: { module: true } },
-    },
-  })
-
-  return NextResponse.json({ organizations: organization ? [organization] : [] })
 }
 
 // POST /api/v1/organizations  — Super admin only

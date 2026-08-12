@@ -32,7 +32,11 @@ export async function GET(
     })
 
     if (!invite) {
-      return NextResponse.json({ error: 'Invalid or expired invite link' }, { status: 404 })
+      return NextResponse.json({ error: 'Invalid invite link' }, { status: 404 })
+    }
+
+    if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+      return NextResponse.json({ error: 'This invite link has expired' }, { status: 400 })
     }
 
     if (invite.isUsed) {

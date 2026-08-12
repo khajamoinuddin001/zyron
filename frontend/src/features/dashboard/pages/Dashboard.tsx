@@ -13,6 +13,7 @@ const Dashboard: React.FC = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [trendPeriod, setTrendPeriod] = useState<string>('7');
+  const [detailsModal, setDetailsModal] = useState<'PRESENT' | 'ABSENT' | null>(null);
   const navigate = useNavigate();
 
   // 1. Fetch groups with useQuery
@@ -97,7 +98,11 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Present Today */}
-        <div className="glass-panel" style={{ flex: '1 1 250px', maxWidth: '320px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', backgroundColor: 'var(--bg-card)' }}>
+        <div
+          className="glass-panel hover-scale"
+          style={{ flex: '1 1 250px', maxWidth: '320px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', backgroundColor: 'var(--bg-card)', cursor: 'pointer' }}
+          onClick={() => setDetailsModal('PRESENT')}
+        >
           <div style={{ padding: '0.8rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
             <CheckCircle size={24} />
           </div>
@@ -109,7 +114,11 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Absent Today */}
-        <div className="glass-panel" style={{ flex: '1 1 250px', maxWidth: '320px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', backgroundColor: 'var(--bg-card)' }}>
+        <div
+          className="glass-panel hover-scale"
+          style={{ flex: '1 1 250px', maxWidth: '320px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', backgroundColor: 'var(--bg-card)', cursor: 'pointer' }}
+          onClick={() => setDetailsModal('ABSENT')}
+        >
           <div style={{ padding: '0.8rem', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderRadius: '12px', color: '#f43f5e' }}>
             <XCircle size={24} />
           </div>
@@ -265,8 +274,55 @@ const Dashboard: React.FC = () => {
             )}
           </div>
         </div>
-
       </div>
+
+      {/* Details Modal */}
+      {detailsModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '1rem' }} onClick={() => setDetailsModal(null)}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', backgroundColor: 'var(--bg-darker)', padding: '2rem', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {detailsModal === 'PRESENT' ? <><CheckCircle size={24} color="#10b981" /> Present Students</> : <><XCircle size={24} color="#f43f5e" /> Absent Students</>}
+              </h2>
+              <button onClick={() => setDetailsModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>&times;</span>
+              </button>
+            </div>
+
+            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem' }}>
+              {detailsModal === 'PRESENT' && data.presentStudents && data.presentStudents.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {data.presentStudents.map((student: any, i: number) => (
+                    <div key={i} style={{ padding: '0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 500 }}>{student.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{student.className}</div>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: student.status === 'LATE' ? '#f59e0b' : '#10b981', backgroundColor: student.status === 'LATE' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>{student.status}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : detailsModal === 'ABSENT' && data.absentStudents && data.absentStudents.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {data.absentStudents.map((student: any, i: number) => (
+                    <div key={i} style={{ padding: '0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 500 }}>{student.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{student.className}</div>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>ABSENT</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  No students found in this category for today.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
