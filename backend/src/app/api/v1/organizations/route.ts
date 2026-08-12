@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    return NextResponse.json({ organizations: organization ? [organization] : [] })
+    return NextResponse.json({ organizations: organization ? [{ ...organization, terminology: organization.terminology }] : [] })
   } catch (error) {
     console.error('[ORGS_GET_ERROR]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   if (authUser instanceof NextResponse) return authUser
 
   const body = await req.json()
-  const { name, domain } = body
+  const { name, domain, terminology } = body
 
   if (!name) {
     return NextResponse.json({ error: 'Organization name is required' }, { status: 400 })

@@ -18,6 +18,7 @@ model Organization {
   theme               String?
   absentTemplateId    String?
   workingDays         String                @default("[1,2,3,4,5,6]")
+  terminology         Json?
   AttendanceRecord    AttendanceRecord[]
   MessageLog          MessageLog[]
   MessageTemplate     MessageTemplate[]
@@ -75,7 +76,7 @@ model OrganizationMember {
   id               String                    @id @default(uuid())
   userId           String
   organizationId   String
-  role             Role                      @default(STAFF)
+  role             Role                      @default(CLIENT)
   status           Status                    @default(ACTIVE)
   createdAt        DateTime                  @default(now())
   customRoleId     String?
@@ -209,7 +210,7 @@ model OrganizationInvite {
   id             String             @id @default(uuid())
   organizationId String
   token          String             @unique
-  role           Role               @default(STUDENT)
+  role           Role               @default(CLIENT)
   groupId        String?
   isUsed         Boolean            @default(false)
   createdAt      DateTime           @default(now())
@@ -228,7 +229,5 @@ enum Role {
   SUPER_ADMIN
   ORG_ADMIN
   STAFF
-  TEACHER
-  STUDENT
-  PARENT
+  CLIENT
 }

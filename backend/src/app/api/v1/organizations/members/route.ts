@@ -24,9 +24,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { firstName, lastName, email, mobile, password, customRoleId, role = 'STAFF', groupId } = body
 
-    // If not admin, restrict them to only creating STUDENTs
-    if (!isOrgAdmin && role !== 'STUDENT') {
-      return NextResponse.json({ error: 'Forbidden. You are only authorized to add students.' }, { status: 403 })
+    // If not admin, restrict them to only creating CLIENTs
+    if (!isOrgAdmin && role !== 'CLIENT') {
+      return NextResponse.json({ error: 'Forbidden. You are only authorized to add clients.' }, { status: 403 })
     }
 
     if (!firstName || (!email && !mobile) || !password) {
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     const finalEmail = email ? email.toLowerCase().trim() : `${mobile}@edminz.local`;
 
-    const passwordCheck = validatePassword(password, role !== 'STUDENT')
+    const passwordCheck = validatePassword(password, role !== 'CLIENT')
     if (!passwordCheck.valid) {
       return NextResponse.json({ error: passwordCheck.message }, { status: 400 })
     }

@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       attWhere.memberId = { in: groupMembers.map(gm => gm.memberId) };
     } else {
       totalStudents = await prisma.organizationMember.count({
-        where: { organizationId: orgId, role: 'STUDENT', status: 'ACTIVE' }
+        where: { organizationId: orgId, role: 'CLIENT', status: 'ACTIVE' }
       });
     }
 

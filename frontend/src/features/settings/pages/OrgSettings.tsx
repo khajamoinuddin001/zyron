@@ -40,6 +40,9 @@ const OrgSettings: React.FC = () => {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [selectedThemeColor, setSelectedThemeColor] = useState('indigo');
   const [selectedThemeMode, setSelectedThemeMode] = useState('dark');
+  const [termClient, setTermClient] = useState('Client');
+  const [termStaff, setTermStaff] = useState('Staff');
+  const [termGroup, setTermGroup] = useState('Group');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -52,6 +55,12 @@ const OrgSettings: React.FC = () => {
       const [color, mode] = themeKey.split(':');
       setSelectedThemeColor(color || 'indigo');
       setSelectedThemeMode(mode || 'dark');
+      
+      if (user.organization.terminology) {
+        setTermClient(user.organization.terminology.client || 'Client');
+        setTermStaff(user.organization.terminology.staff || 'Staff');
+        setTermGroup(user.organization.terminology.group || 'Group');
+      }
     }
   }, [user]);
 
@@ -71,17 +80,17 @@ const OrgSettings: React.FC = () => {
     setProfileSaving(true);
     setProfileMsg(null);
     try {
-      const fullTheme = `${selectedThemeColor}:${selectedThemeMode}`;
       const result = await api.patch<{ organization: any }>('/organizations/profile', {
         name: orgName.trim(),
         logoUrl: logoPreview,
-        theme: fullTheme,
+        theme: `${selectedThemeColor}:${selectedThemeMode}`,
+        terminology: { client: termClient, staff: termStaff, group: termGroup }
       });
       // Update in store
       if (user) {
         setUser({ ...user, organization: result.organization });
       }
-      applyTheme(fullTheme);
+      applyTheme(`${selectedThemeColor}:${selectedThemeMode}`);
       setProfileMsg({ type: 'success', text: 'Organization profile updated!' });
     } catch (err: any) {
       setProfileMsg({ type: 'error', text: err.message || 'Failed to save.' });
@@ -203,6 +212,48 @@ const OrgSettings: React.FC = () => {
               style={inputStyle}
               placeholder="e.g., Skyward Logistics"
             />
+          </div>
+        </div>
+
+        <div style={{ marginTop: '2.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '2.5rem', marginBottom: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Palette size={20} style={{ color: 'var(--primary)' }} /> Terminology Overrides
+          </h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', maxWidth: '600px' }}>
+            Customize the words used throughout the platform to match your industry (e.g., change "Client" to "Student" or "Patient").
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Clients / End-users</label>
+              <input 
+                type="text" 
+                value={termClient} 
+                onChange={e => setTermClient(e.target.value)}
+                placeholder="e.g. Student, Patient, Member"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Staff / Employees</label>
+              <input 
+                type="text" 
+                value={termStaff} 
+                onChange={e => setTermStaff(e.target.value)}
+                placeholder="e.g. Teacher, Doctor, Agent"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Groups / Departments</label>
+              <input 
+                type="text" 
+                value={termGroup} 
+                onChange={e => setTermGroup(e.target.value)}
+                placeholder="e.g. Class, Ward, Team"
+                style={inputStyle}
+              />
+            </div>
           </div>
         </div>
 

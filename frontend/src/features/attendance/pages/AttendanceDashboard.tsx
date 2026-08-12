@@ -57,6 +57,10 @@ const AttendanceDashboard: React.FC = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [groupMembers, setGroupMembers] = useState<Member[]>([]);
   const [records, setRecords] = useState<Record<string, 'PRESENT' | 'ABSENT' | 'LATE'>>({});
+  const termClient = authUser?.organization?.terminology?.client || 'Client';
+  const termStaff = authUser?.organization?.terminology?.staff || 'Staff';
+  const termGroup = authUser?.organization?.terminology?.group || 'Group';
+
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -77,7 +81,7 @@ const AttendanceDashboard: React.FC = () => {
 
   // Add new member state
   const [showAddMember, setShowAddMember] = useState(false);
-  const [newMemberData, setNewMemberData] = useState({ firstName: '', lastName: '', email: '', mobile: '', password: '', role: 'STUDENT', groupId: '' });
+  const [newMemberData, setNewMemberData] = useState({ firstName: '', lastName: '', email: '', mobile: '', password: '', role: 'CLIENT', groupId: '' });
   const [addingMember, setAddingMember] = useState(false);
   const [showPassword, setShowPassword] = useState(true);
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -360,9 +364,9 @@ const AttendanceDashboard: React.FC = () => {
               }}>
                 <Plus size={16} /> Add New Person
               </button>
-              <button className="btn btn-primary w-full-mobile" onClick={() => setShowCreateGroup(true)}>
-                <Plus size={16} /> Create Group
-              </button>
+              <button onClick={() => setShowCreateGroup(true)} className="btn btn-primary">
+            <Plus size={16} /> Create {termGroup}
+          </button>
             </div>
           </div>
 
@@ -621,7 +625,7 @@ const AttendanceDashboard: React.FC = () => {
             <button onClick={() => setTakingAttendanceIndex(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--bg-dark)', border: '1px solid var(--border-light)', color: 'var(--text-muted)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={18} /></button>
 
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>
-              Student {takingAttendanceIndex + 1} of {groupMembers.length}
+              {termClient} {takingAttendanceIndex + 1} of {groupMembers.length}
             </p>
 
             <div key={currentAttendanceMember.id} className="animate-slide-in">
@@ -726,7 +730,7 @@ const AttendanceDashboard: React.FC = () => {
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div>
                 <h3 style={{ margin: '0 0 0.25rem 0' }}>Manage Members: {manageGroup.name}</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Select the staff, students, or employees that belong to this group.</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Select the {termStaff.toLowerCase()}, {termClient.toLowerCase()}s, or employees that belong to this {termGroup.toLowerCase()}.</p>
               </div>
             </div>
 
@@ -744,9 +748,9 @@ const AttendanceDashboard: React.FC = () => {
                   if (!matchesSearch) return false;
 
                   if (manageGroup.type === 'CLASS') {
-                    return m.role === 'STUDENT';
+                    return m.role === 'CLIENT';
                   } else if (manageGroup.type === 'DEPARTMENT') {
-                    return m.role !== 'STUDENT';
+                    return m.role !== 'CLIENT';
                   }
                   return true;
                 });
@@ -784,7 +788,7 @@ const AttendanceDashboard: React.FC = () => {
                           if (isSelected) {
                             setManageGroupMembers(prev => prev.filter(id => id !== m.id));
                           } else {
-                            if (manageGroup.type === 'CLASS' && m.role === 'STUDENT') {
+                            if (manageGroup.type === 'CLASS' && m.role === 'CLIENT') {
                               const otherClasses = m.groups?.filter(g => g.group.type === 'CLASS' && g.group.name !== manageGroup.name);
                               if (otherClasses && otherClasses.length > 0) {
                                 const classNames = otherClasses.map(g => g.group.name).join(', ');
@@ -803,7 +807,7 @@ const AttendanceDashboard: React.FC = () => {
                               {m.user.firstName} {m.user.lastName}
                             </div>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                              {m.user.email} · {m.role}
+                              {m.user.email} &middot; {m.customRole?.name || (m.role === 'CLIENT' ? termClient.toUpperCase() : m.role === 'STAFF' ? termStaff.toUpperCase() : m.role)}
                             </div>
                           </div>
                         </div>
@@ -840,7 +844,7 @@ const AttendanceDashboard: React.FC = () => {
                 setAllOrgMembers(allRes.members || []);
                 setManageGroupMembers(prev => [...prev, res.member.id]);
                 setShowAddMember(false);
-                setNewMemberData({ firstName: '', lastName: '', email: '', mobile: '', password: authUser?.organization?.name || '', role: 'STUDENT', groupId: '' });
+                setNewMemberData({ firstName: '', lastName: '', email: '', mobile: '', password: authUser?.organization?.name || '', role: 'CLIENT', groupId: '' });
               } catch (err: any) {
                 alert(err.message || 'Failed to add member');
               } finally {
@@ -850,8 +854,8 @@ const AttendanceDashboard: React.FC = () => {
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Role</label>
                 <select required value={newMemberData.role} onChange={e => setNewMemberData({ ...newMemberData, role: e.target.value })} style={{ width: '100%', padding: '0.75rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '8px', color: 'var(--text-main)', boxSizing: 'border-box' }}>
-                  <option value="STUDENT">Student</option>
-                  <option value="STAFF">Staff / Employee</option>
+                  <option value="CLIENT">{termClient}</option>
+                  <option value="STAFF">{termStaff} / Employee</option>
                 </select>
               </div>
               <div style={{ marginBottom: '1rem' }}>
@@ -941,7 +945,7 @@ const AttendanceDashboard: React.FC = () => {
                 <LinkIcon size={28} />
               </div>
               <h3 style={{ margin: '0 0 0.5rem 0' }}>Invite Link Generated!</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Share this link with your students. It will expire based on your selected timeframe.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Share this link with your {termClient.toLowerCase()}s. It will expire based on your selected timeframe.</p>
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '0.5rem 0.5rem 0.5rem 1rem' }}>

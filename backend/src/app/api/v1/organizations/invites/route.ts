@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       data: {
         organizationId: authUser.organizationId,
         token,
-        role: 'STUDENT',
+        role: 'CLIENT',
         groupId,
         expiresAt
       }

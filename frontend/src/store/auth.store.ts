@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type Role = 'SUPER_ADMIN' | 'ORG_ADMIN' | 'STAFF' | 'TEACHER' | 'STUDENT' | 'PARENT';
+export type Role = 'SUPER_ADMIN' | 'ORG_ADMIN' | 'STAFF' | 'CLIENT';
 
 export interface Organization {
   id: string;
@@ -11,6 +11,7 @@ export interface Organization {
   logoUrl?: string | null;
   theme?: string | null;
   workingDays?: string;
+  terminology?: any;
 }
 
 export interface User {

@@ -95,13 +95,13 @@ export const router = createBrowserRouter([
               { path: '', element: <OrgDashboard /> },
               { path: 'apps', element: <AppsPage /> },
               { path: 'top-absent', element: <TopAbsentStudents /> },
-              { path: 'profile', element: <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT', 'PARENT']}><ProfileSettings /></ProtectedRoute> },
+              { path: 'profile', element: <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ORG_ADMIN', 'STAFF', 'CLIENT']}><ProfileSettings /></ProtectedRoute> },
               { path: 'app-store', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><AppStore /></ProtectedRoute> },
               { path: 'team-roles', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><TeamRoles /></ProtectedRoute> },
               { path: 'settings', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><OrgSettings /></ProtectedRoute> },
-              { path: 'attendance', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><AttendanceDashboard /></ProtectedRoute> },
-              { path: 'messaging', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER']}><MessagingApp /></ProtectedRoute> },
-              { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'TEACHER', 'STUDENT']}><CalendarApp /></ProtectedRoute> },
+              { path: 'attendance', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><AttendanceDashboard /></ProtectedRoute> },
+              { path: 'messaging', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><MessagingApp /></ProtectedRoute> },
+              { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'CLIENT']}><CalendarApp /></ProtectedRoute> },
               { path: 'contacts', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactsApp /></ProtectedRoute> },
               { path: 'contacts/:id', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactDetails /></ProtectedRoute> }
             ]

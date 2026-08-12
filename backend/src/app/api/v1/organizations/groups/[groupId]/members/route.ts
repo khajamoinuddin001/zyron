@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, { params }: { params: { groupId: st
       select: { id: true, role: true }
     })
     
-    const studentIds = membersData.filter(m => m.role === 'STUDENT').map(m => m.id)
+    const studentIds = membersData.filter(m => m.role === 'CLIENT').map(m => m.id)
 
     const transactionTasks: any[] = [
       prisma.organizationGroupMember.deleteMany({

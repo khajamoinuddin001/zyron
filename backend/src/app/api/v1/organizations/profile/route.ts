@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     const org = await prisma.organization.findUnique({
       where: { id: authUser.organizationId },
-      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true },
+      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true, terminology: true },
     })
 
     if (!org) {
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { name, logoUrl, theme } = body
+    const { name, logoUrl, theme, terminology } = body
 
     const updated = await prisma.organization.update({
       where: { id: authUser.organizationId },
@@ -51,8 +51,9 @@ export async function PATCH(req: NextRequest) {
         ...(name?.trim() && { name: name.trim() }),
         ...(logoUrl !== undefined && { logoUrl }),
         ...(theme !== undefined && { theme }),
+        ...(terminology !== undefined && { terminology }),
       },
-      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true },
+      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true, terminology: true },
     })
 
     return NextResponse.json({ organization: updated })
