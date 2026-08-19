@@ -80,22 +80,27 @@ const Register: React.FC = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '2rem'
+      padding: '2rem',
+      backgroundColor: '#f8fafc'
     }}>
 
-      <div className="glass-panel animate-float" style={{
+      <div style={{
         width: '100%',
-        maxWidth: '500px',
-        padding: '3rem 2rem',
+        maxWidth: '520px',
+        padding: '3.5rem 2.5rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '24px',
+        boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+        border: '1px solid rgba(0,0,0,0.05)',
         position: 'relative',
         zIndex: 10
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div className="logo-icon" style={{ margin: '0 auto 1rem', width: '50px', height: '50px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f3efff', color: '#7c3aed', marginBottom: '1.25rem' }}>
             <ShieldCheck size={32} />
           </div>
-          <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Create Your Organization</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Get started with Edminz Business OS.</p>
+          <h1 style={{ fontSize: '1.85rem', marginBottom: '0.5rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.02em' }}>Create Your Organization</h1>
+          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Get started with Edminz Business OS.</p>
         </div>
 
         {error && (
@@ -117,9 +122,9 @@ const Register: React.FC = () => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Organization Name</label>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#475569', marginBottom: '0.5rem', fontWeight: 500 }}>Organization Name</label>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+              <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                 <Building size={18} />
               </div>
               <input
@@ -130,14 +135,18 @@ const Register: React.FC = () => {
                 onChange={handleChange}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 1rem 0.75rem 2.75rem',
-                  backgroundColor: 'rgba(255,255,255,0.03)',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-main)',
+                  padding: '0.85rem 1rem 0.85rem 2.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  color: '#0f172a',
                   fontFamily: 'inherit',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#7c3aed'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                 required
               />
             </div>
@@ -145,9 +154,9 @@ const Register: React.FC = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>First Name</label>
+              <label style={{ display: 'block', fontSize: '0.9rem', color: '#475569', marginBottom: '0.5rem', fontWeight: 500 }}>First Name</label>
               <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                   <User size={18} />
                 </div>
                 <input
@@ -171,9 +180,9 @@ const Register: React.FC = () => {
               </div>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Last Name</label>
+              <label style={{ display: 'block', fontSize: '0.9rem', color: '#475569', marginBottom: '0.5rem', fontWeight: 500 }}>Last Name</label>
               <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                   <User size={18} />
                 </div>
                 <input
@@ -199,9 +208,9 @@ const Register: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Work Email</label>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#475569', marginBottom: '0.5rem', fontWeight: 500 }}>Work Email</label>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+              <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                 <Mail size={18} />
               </div>
               <input
@@ -212,23 +221,27 @@ const Register: React.FC = () => {
                 onChange={handleChange}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 1rem 0.75rem 2.75rem',
-                  backgroundColor: 'rgba(255,255,255,0.03)',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-main)',
+                  padding: '0.85rem 1rem 0.85rem 2.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  color: '#0f172a',
                   fontFamily: 'inherit',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#7c3aed'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                 required
               />
             </div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Password</label>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#475569', marginBottom: '0.5rem', fontWeight: 500 }}>Password</label>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+              <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                 <Lock size={18} />
               </div>
               <input
@@ -239,14 +252,18 @@ const Register: React.FC = () => {
                 onChange={handleChange}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 2.75rem',
-                  backgroundColor: 'rgba(255,255,255,0.03)',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-main)',
+                  padding: '0.85rem 2.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  color: '#0f172a',
                   fontFamily: 'inherit',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#7c3aed'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                 required
                 minLength={8}
               />
@@ -300,14 +317,18 @@ const Register: React.FC = () => {
                 onChange={handleChange}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 2.75rem',
-                  backgroundColor: 'rgba(255,255,255,0.03)',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-main)',
+                  padding: '0.85rem 2.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  color: '#0f172a',
                   fontFamily: 'inherit',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#7c3aed'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                 required
                 minLength={8}
               />
@@ -323,16 +344,32 @@ const Register: React.FC = () => {
 
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', marginTop: '0.5rem', justifyContent: 'center' }}
+            style={{ 
+              width: '100%', 
+              marginTop: '1rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '0.5rem',
+              backgroundColor: '#8b5cf6',
+              color: 'white',
+              border: 'none',
+              padding: '0.85rem 1.5rem',
+              borderRadius: '9999px',
+              fontSize: '1rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(139, 92, 246, 0.4)',
+              transition: 'all 0.2s ease'
+            }}
             disabled={loading}
           >
             {loading ? <Loader2 size={18} className="spin" /> : 'Create Account'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)' }}>
-          Already have an account? <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Log in</Link>
+        <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem', color: '#64748b' }}>
+          Already have an account? <Link to="/login" style={{ color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>Log in</Link>
         </p>
       </div>
     </div>
