@@ -238,3 +238,18 @@ enum Role {
   STAFF
   CLIENT
 }
+
+model SystemLog {
+  id             String   @id @default(uuid())
+  endpoint       String
+  method         String
+  durationMs     Int
+  statusCode     Int
+  errorMessage   String?
+  organizationId String?
+  userId         String?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([durationMs])
+}

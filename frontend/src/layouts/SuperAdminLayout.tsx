@@ -54,8 +54,8 @@ const SuperAdminLayout: React.FC = () => {
           <Link to="/admin/organizations" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
             <Users size={20} /> Organizations
           </Link>
-          <Link to="/admin" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
-            <Activity size={20} /> Audit Logs
+          <Link to="/admin/health" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
+            <Activity size={20} /> System Health
           </Link>
           <Link to="/admin/subscriptions" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
             <CreditCard size={20} /> Subscriptions

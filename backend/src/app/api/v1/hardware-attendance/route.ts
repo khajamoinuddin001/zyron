@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/core/database/prisma'
 import { attendanceQueue } from '@/core/queues/attendanceQueue'
+import { withPerformanceLog } from '@/core/utils/withPerformanceLog'
 
-export async function POST(req: NextRequest) {
+export const POST = withPerformanceLog(async (req: NextRequest) => {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
@@ -43,4 +44,4 @@ export async function POST(req: NextRequest) {
     console.error('[HARDWARE_WEBHOOK_ERROR]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, 'hardware-attendance')

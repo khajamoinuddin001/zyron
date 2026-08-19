@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/core/database/prisma'
 import { requireAuth } from '@/core/auth/middleware'
+import { withPerformanceLog } from '@/core/utils/withPerformanceLog'
 
-export async function GET(req: NextRequest) {
+export const GET = withPerformanceLog(async (req: NextRequest) => {
   try {
     const authUser = requireAuth(req)
     if (authUser instanceof NextResponse) return authUser
@@ -36,9 +37,9 @@ export async function GET(req: NextRequest) {
     console.error('[ATTENDANCE_GET_ERROR]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, 'attendance-get')
 
-export async function POST(req: NextRequest) {
+export const POST = withPerformanceLog(async (req: NextRequest) => {
   try {
     const authUser = requireAuth(req)
     if (authUser instanceof NextResponse) return authUser
@@ -173,4 +174,4 @@ export async function POST(req: NextRequest) {
     console.error('[ATTENDANCE_POST_ERROR]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, 'attendance-post')

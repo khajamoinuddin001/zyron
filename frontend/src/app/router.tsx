@@ -11,6 +11,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import SuperAdminDashboard from '../platform-admin/dashboard/Dashboard';
 import Subscriptions from '../platform-admin/subscriptions/Subscriptions';
 import OrganizationsList from '../platform-admin/organizations/OrganizationsList';
+import { SystemHealthDashboard } from '../platform-admin/health/SystemHealthDashboard';
 import OrgDashboard from '../features/dashboard/pages/Dashboard';
 import AppsPage from '../features/dashboard/pages/AppsPage';
 import TopAbsentStudents from '../features/dashboard/pages/TopAbsentStudents';
@@ -79,7 +80,8 @@ export const router = createBrowserRouter([
             children: [
               { path: '', element: <SuperAdminDashboard /> },
               { path: 'subscriptions', element: <Subscriptions /> },
-              { path: 'organizations', element: <OrganizationsList /> }
+              { path: 'organizations', element: <OrganizationsList /> },
+              { path: 'health', element: <SystemHealthDashboard /> }
             ]
           }
         ],
