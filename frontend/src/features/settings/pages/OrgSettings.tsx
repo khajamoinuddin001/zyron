@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Building2, Camera, Palette, Lock, Save, Loader2,
-  AlertCircle, CheckCircle, Eye, EyeOff, ChevronRight
+  AlertCircle, CheckCircle, Eye, EyeOff, ChevronRight, Fingerprint, RefreshCw
 } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuthStore } from '../../../store/auth.store';
@@ -43,6 +43,8 @@ const OrgSettings: React.FC = () => {
   const [termClient, setTermClient] = useState('Client');
   const [termStaff, setTermStaff] = useState('Staff');
   const [termGroup, setTermGroup] = useState('Group');
+  const [webhookSecret, setWebhookSecret] = useState<string | null>(null);
+  const [generatingWebhook, setGeneratingWebhook] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -61,6 +63,7 @@ const OrgSettings: React.FC = () => {
         setTermStaff(user.organization.terminology.staff || 'Staff');
         setTermGroup(user.organization.terminology.group || 'Group');
       }
+      setWebhookSecret(user.organization.webhookSecret || null);
     }
   }, [user]);
 
@@ -96,6 +99,25 @@ const OrgSettings: React.FC = () => {
       setProfileMsg({ type: 'error', text: err.message || 'Failed to save.' });
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const handleGenerateWebhook = async () => {
+    if (!window.confirm("Generating a new secret will immediately break any existing hardware integrations until you update them. Are you sure?")) return;
+    setGeneratingWebhook(true);
+    try {
+      const result = await api.patch<{ organization: any }>('/organizations/profile', {
+        generateWebhookSecret: true
+      });
+      if (user) {
+        setUser({ ...user, organization: { ...user.organization, webhookSecret: result.organization.webhookSecret } as any });
+      }
+      setWebhookSecret(result.organization.webhookSecret);
+      setProfileMsg({ type: 'success', text: 'Webhook secret generated successfully!' });
+    } catch (err: any) {
+      setProfileMsg({ type: 'error', text: err.message || 'Failed to generate webhook secret.' });
+    } finally {
+      setGeneratingWebhook(false);
     }
   };
 
@@ -254,6 +276,38 @@ const OrgSettings: React.FC = () => {
                 style={inputStyle}
               />
             </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '2.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '2.5rem', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', margin: '0 0 0.5rem 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Fingerprint size={20} style={{ color: 'var(--primary)' }} /> Hardware Integrations
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0, maxWidth: '600px' }}>
+                Connect physical biometric machines (Fingerprint, Face, RFID) directly to your attendance system. Point your machine's ADMS/Cloud Push to <code>{window.location.origin}/api/v1/hardware-attendance</code> and use this secret in the Authorization header.
+              </p>
+            </div>
+            <button className="btn btn-secondary" onClick={handleGenerateWebhook} disabled={generatingWebhook}>
+              {generatingWebhook ? <Loader2 size={16} className="spin" /> : <RefreshCw size={16} />}
+              {webhookSecret ? 'Regenerate Secret' : 'Generate Secret'}
+            </button>
+          </div>
+
+          <div style={{ padding: '1rem', backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-light)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ flex: 1, fontFamily: 'monospace', color: webhookSecret ? 'var(--text-main)' : 'var(--text-muted)' }}>
+              {webhookSecret || 'No secret generated yet.'}
+            </div>
+            {webhookSecret && (
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => { navigator.clipboard.writeText(webhookSecret); alert('Copied to clipboard!'); }}
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+              >
+                Copy
+              </button>
+            )}
           </div>
         </div>
 

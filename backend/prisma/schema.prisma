@@ -19,6 +19,7 @@ model Organization {
   absentTemplateId    String?
   workingDays         String                @default("[1,2,3,4,5,6]")
   terminology         Json?
+  webhookSecret       String?               @unique
   AttendanceRecord    AttendanceRecord[]
   MessageLog          MessageLog[]
   MessageTemplate     MessageTemplate[]
@@ -80,6 +81,7 @@ model OrganizationMember {
   status           Status                    @default(ACTIVE)
   createdAt        DateTime                  @default(now())
   customRoleId     String?
+  biometricHardwareId String?
   AttendanceRecord AttendanceRecord[]
   groups           OrganizationGroupMember[]
   customRole       OrganizationRole?         @relation(fields: [customRoleId], references: [id])
@@ -87,6 +89,8 @@ model OrganizationMember {
   user             User                      @relation(fields: [userId], references: [id])
 
   @@unique([userId, organizationId])
+  @@unique([organizationId, biometricHardwareId])
+  @@index([biometricHardwareId])
 }
 
 model AuditLog {
@@ -143,6 +147,9 @@ model AttendanceRecord {
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, memberId, date])
+  @@index([date])
+  @@index([memberId])
+  @@index([organizationId])
 }
 
 model OrganizationGroup {

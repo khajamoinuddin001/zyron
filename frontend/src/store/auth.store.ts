@@ -12,6 +12,7 @@ export interface Organization {
   theme?: string | null;
   workingDays?: string;
   terminology?: any;
+  webhookSecret?: string | null;
 }
 
 export interface User {

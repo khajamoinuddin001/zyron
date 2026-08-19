@@ -144,6 +144,7 @@ export async function GET(req: NextRequest) {
             mobile: true,
           },
         },
+        customRole: true,
         groups: {
           include: {
             group: {

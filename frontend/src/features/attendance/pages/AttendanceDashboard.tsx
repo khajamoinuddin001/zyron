@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BookOpen, Calendar as CalendarIcon, CheckCircle, XCircle, AlertCircle, Save, Loader2, Clock, Send, Users, Plus, Trash2, Edit2, X, RefreshCw, Download, Settings, Search, Eye, EyeOff, Link as LinkIcon, Copy } from 'lucide-react';
+import { BookOpen, Calendar as CalendarIcon, CheckCircle, XCircle, AlertCircle, Save, Loader2, Clock, Send, Users, Plus, Trash2, Edit2, X, RefreshCw, Download, Settings, Search, Eye, EyeOff, Link as LinkIcon, Copy, UserX } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuthStore } from '../../../store/auth.store';
 import { AttendanceSettings } from './AttendanceSettings';
@@ -24,6 +24,8 @@ interface Member {
     email: string;
   };
   role: string;
+  customRole?: { name: string };
+  biometricHardwareId?: string | null;
   groups?: {
     group: {
       name: string;
@@ -100,9 +102,20 @@ const AttendanceDashboard: React.FC = () => {
       setGeneratedInviteLink(link);
       setLinkSetupGroup(null);
     } catch (err: any) {
-      alert('Failed to generate link: ' + err.message);
+      alert('Failed to get invite links: ' + err.message);
     } finally {
       setGeneratingLink(null);
+    }
+  };
+
+  const handleSetHardwareId = async (memberId: string, currentId?: string | null) => {
+    const newId = window.prompt("Enter the physical biometric machine's ID for this user (e.g. 1005). Leave blank to remove.", currentId || "");
+    if (newId === null) return; // Cancelled
+    try {
+      await api.patch(`/organizations/members/${memberId}`, { biometricHardwareId: newId });
+      setAllOrgMembers(prev => prev.map(m => m.id === memberId ? { ...m, biometricHardwareId: newId } : m));
+    } catch (e: any) {
+      alert(e.message || "Failed to set hardware ID");
     }
   };
 
@@ -271,6 +284,18 @@ const AttendanceDashboard: React.FC = () => {
     const recMap: Record<string, 'PRESENT' | 'ABSENT' | 'LATE'> = {};
     groupMembers.forEach(m => recMap[m.id] = status);
     setRecords(recMap);
+  };
+
+  const markUnmarkedAbsent = () => {
+    setRecords(prev => {
+      const newRecords = { ...prev };
+      groupMembers.forEach(m => {
+        if (!newRecords[m.id]) {
+          newRecords[m.id] = 'ABSENT';
+        }
+      });
+      return newRecords;
+    });
   };
 
   const handleSaveAttendance = async () => {
@@ -528,6 +553,9 @@ const AttendanceDashboard: React.FC = () => {
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 <button className="btn btn-outline" style={{ fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.5rem 1rem' }} onClick={handleDownloadReport} disabled={!groupMembers.length}>
                   <Download size={16} /> <span className="hide-mobile">Download</span>
+                </button>
+                <button className="btn" style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.5rem 1rem', opacity: isLocked ? 0.5 : 1 }} onClick={markUnmarkedAbsent} disabled={!groupMembers.length || isLocked} title={isLocked ? "Locked" : "Mark all blank students as Absent"}>
+                  <UserX size={16} /> <span className="hide-mobile">Mark Remaining Absent</span>
                 </button>
                 <button className="btn btn-primary" style={{ fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.5rem 1rem', opacity: isLocked ? 0.5 : 1 }} onClick={() => setTakingAttendanceIndex(0)} disabled={!groupMembers.length || isLocked} title={isLocked ? "Locked" : ""}>
                   <BookOpen size={16} /> <span className="hide-mobile">Start Attendance</span><span className="show-mobile-flex">Start</span>
@@ -806,8 +834,14 @@ const AttendanceDashboard: React.FC = () => {
                             <div style={{ fontWeight: 500 }}>
                               {m.user.firstName} {m.user.lastName}
                             </div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                              {m.user.email} &middot; {m.customRole?.name || (m.role === 'CLIENT' ? termClient.toUpperCase() : m.role === 'STAFF' ? termStaff.toUpperCase() : m.role)}
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
+                              <span>{m.user.email} &middot; {m.customRole?.name || (m.role === 'CLIENT' ? termClient.toUpperCase() : m.role === 'STAFF' ? termStaff.toUpperCase() : m.role)}</span>
+                              <span 
+                                onClick={(e) => { e.stopPropagation(); handleSetHardwareId(m.id, m.biometricHardwareId); }}
+                                style={{ backgroundColor: m.biometricHardwareId ? 'var(--primary)' : 'rgba(255,255,255,0.05)', color: m.biometricHardwareId ? '#fff' : 'var(--text-muted)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', border: '1px solid var(--border-light)' }}
+                              >
+                                {m.biometricHardwareId ? `HW: ${m.biometricHardwareId}` : '+ Set Hardware ID'}
+                              </span>
                             </div>
                           </div>
                         </div>
