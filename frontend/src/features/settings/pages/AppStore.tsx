@@ -3,7 +3,7 @@ import { useAuthStore } from '../../../store/auth.store';
 import { api } from '../../../services/api';
 import {
   Users, MessageSquare, CreditCard, Calendar, BookOpen, Truck,
-  Package, Home, Download, Trash2, CalendarDays, Contact
+  Package, Home, Download, Trash2, CalendarDays, Contact, Globe
 } from 'lucide-react';
 
 // ─── Module catalogue ────────────────────────────────────────────────────────
@@ -18,9 +18,10 @@ const ALL_MODULES = [
   { key: 'transport',   name: 'Transport',       desc: 'GPS tracking and fleet route management.',        icon: <Truck        size={24} /> },
   { key: 'inventory',   name: 'Inventory',       desc: 'Track assets, supplies, and orders.',             icon: <Package      size={24} /> },
   { key: 'hostel',      name: 'Hostel',          desc: 'Manage room allocations and visitors.',           icon: <Home         size={24} /> },
+  { key: 'website',     name: 'Website Builder', desc: 'Design and customize your public-facing landing page.', icon: <Globe size={24} /> },
 ];
 
-const SUPPORTED = new Set(['attendance', 'messaging', 'calendar', 'contacts']);
+const SUPPORTED = new Set(['attendance', 'messaging', 'calendar', 'contacts', 'website']);
 
 const AppStore: React.FC = () => {
   const user           = useAuthStore(s => s.user);

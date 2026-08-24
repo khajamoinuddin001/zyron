@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     const org = await prisma.organization.findUnique({
       where: { id: authUser.organizationId },
-      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true, terminology: true, webhookSecret: true },
+      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true, terminology: true, webhookSecret: true, publicWebsite: true },
     })
 
     if (!org) {
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { name, logoUrl, theme, terminology, generateWebhookSecret } = body
+    const { name, logoUrl, theme, domain, terminology, generateWebhookSecret, publicWebsite } = body
 
     let newWebhookSecret = undefined;
     if (generateWebhookSecret) {
@@ -56,10 +56,12 @@ export async function PATCH(req: NextRequest) {
         ...(name?.trim() && { name: name.trim() }),
         ...(logoUrl !== undefined && { logoUrl }),
         ...(theme !== undefined && { theme }),
+        ...(domain !== undefined && { domain: domain.trim().toLowerCase() }),
         ...(terminology !== undefined && { terminology }),
         ...(newWebhookSecret && { webhookSecret: newWebhookSecret }),
+        ...(publicWebsite !== undefined && { publicWebsite }),
       },
-      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true, terminology: true, webhookSecret: true },
+      select: { id: true, name: true, domain: true, logoUrl: true, theme: true, status: true, terminology: true, webhookSecret: true, publicWebsite: true },
     })
 
     return NextResponse.json({ organization: updated })

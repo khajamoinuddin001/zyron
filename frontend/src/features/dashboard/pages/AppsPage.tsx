@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Store, BookOpen, MessageSquare, Calendar, Users, FileText } from 'lucide-react';
+import { Store, BookOpen, MessageSquare, Calendar, Users, FileText, Globe } from 'lucide-react';
 import { useAuthStore } from '../../../store/auth.store';
 
 const AppsPage: React.FC = () => {
@@ -73,6 +73,16 @@ const AppsPage: React.FC = () => {
             </div>
             <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>Accounts</h3>
             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Billing & invoices</p>
+          </Link>
+        )}
+
+        {activeModules.includes('website') && (
+          <Link to="/dashboard/website" className="glass-panel hover-scale" style={boxStyle}>
+            <div style={{ padding: '1rem', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px', color: 'var(--primary)', marginBottom: '1rem' }}>
+              <Globe size={36} />
+            </div>
+            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>Website Builder</h3>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Landing page builder</p>
           </Link>
         )}
 

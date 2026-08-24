@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Building2, Camera, Palette, Lock, Save, Loader2,
-  AlertCircle, CheckCircle, Eye, EyeOff, ChevronRight, Fingerprint, RefreshCw
+  AlertCircle, CheckCircle, Eye, EyeOff, ChevronRight, Fingerprint, RefreshCw, Copy
 } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuthStore } from '../../../store/auth.store';
@@ -37,6 +37,7 @@ const OrgSettings: React.FC = () => {
 
   // Profile state
   const [orgName, setOrgName] = useState('');
+  const [orgDomain, setOrgDomain] = useState('');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [selectedThemeColor, setSelectedThemeColor] = useState('indigo');
   const [selectedThemeMode, setSelectedThemeMode] = useState('dark');
@@ -44,6 +45,7 @@ const OrgSettings: React.FC = () => {
   const [termStaff, setTermStaff] = useState('Staff');
   const [termGroup, setTermGroup] = useState('Group');
   const [webhookSecret, setWebhookSecret] = useState<string | null>(null);
+  
   const [generatingWebhook, setGeneratingWebhook] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -51,6 +53,7 @@ const OrgSettings: React.FC = () => {
   useEffect(() => {
     if (user?.organization) {
       setOrgName(user.organization.name || '');
+      setOrgDomain(user.organization.domain || '');
       setLogoPreview(user.organization.logoUrl || null);
       
       const themeKey = user.organization.theme || 'indigo:light';
@@ -64,6 +67,7 @@ const OrgSettings: React.FC = () => {
         setTermGroup(user.organization.terminology.group || 'Group');
       }
       setWebhookSecret(user.organization.webhookSecret || null);
+
     }
   }, [user]);
 
@@ -225,15 +229,29 @@ const OrgSettings: React.FC = () => {
           </div>
 
           {/* Name */}
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Organization Name</label>
-            <input
-              type="text"
-              value={orgName}
-              onChange={e => setOrgName(e.target.value)}
-              style={inputStyle}
-              placeholder="e.g., Skyward Logistics"
-            />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Organization Name</label>
+              <input
+                type="text"
+                value={orgName}
+                onChange={e => setOrgName(e.target.value)}
+                style={inputStyle}
+                placeholder="e.g., Skyward Logistics"
+              />
+            </div>
+            {((user?.organization as any)?.publicWebsite?.enabled) && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Custom Subdomain</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-dark)', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+                  <span style={{ fontFamily: 'monospace', color: 'var(--text-main)', fontSize: '0.9rem', flex: 1 }}>{orgDomain || 'skyward'}.zyron.com</span>
+                  <button onClick={() => navigator.clipboard.writeText(`${orgDomain || 'skyward'}.zyron.com`)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }} title="Copy Subdomain">
+                    <Copy size={16} />
+                  </button>
+                </div>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Subdomain can be configured in the Website Builder when a public website is enabled.</p>
+              </div>
+            )}
           </div>
         </div>
 

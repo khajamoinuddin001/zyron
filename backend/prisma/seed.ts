@@ -62,6 +62,12 @@ async function main() {
       description: 'Manage organizational events, holidays, and schedules',
       monthlyPrice: 299,
     },
+    {
+      key: 'website',
+      name: 'Website Builder',
+      description: 'Design and customize your public-facing landing page',
+      monthlyPrice: 499,
+    },
   ]
 
   console.log('📦 Creating platform modules...')

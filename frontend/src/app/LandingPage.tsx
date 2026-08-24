@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useBrandingStore } from '../store/branding.store';
+import TenantLandingPage from './TenantLandingPage';
 import {
   MessageSquare,
   Users,
@@ -17,6 +19,9 @@ import {
 const LandingPage: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const domain = useBrandingStore(state => state.domain);
+  const publicWebsite = useBrandingStore(state => state.publicWebsite);
+  const isLoading = useBrandingStore(state => state.isLoading);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +30,30 @@ const LandingPage: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // If a custom tenant domain is active
+  if (!isLoading && domain) {
+    // If they explicitly disabled it, go to login. Otherwise, show the landing page.
+    if (publicWebsite && publicWebsite.enabled === false) {
+      return <Navigate to="/login" replace />;
+    }
+    return <TenantLandingPage />;
+  }
+
+  // Check if we are on an unknown subdomain that wasn't found in DB
+  const hostname = window.location.hostname;
+  const parts = hostname.split('.');
+  let hasSubdomain = false;
+  if (hostname.includes('localhost') && parts.length > 1 && parts[0] !== 'localhost') {
+    hasSubdomain = true;
+  } else if (parts.length > 2 && parts[0] !== 'www') {
+    hasSubdomain = true;
+  }
+
+  // If ANY unknown subdomain is present, default to login to prevent showing main SaaS landing
+  if (!isLoading && !domain && hasSubdomain) {
+    return <Navigate to="/login" replace />;
+  }
 
   const features = [
     { icon: <Users size={28} />, title: 'Attendance', desc: 'Real-time biometric & manual attendance tracking.', className: 'bento-large' },

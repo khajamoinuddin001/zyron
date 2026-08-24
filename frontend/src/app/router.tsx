@@ -24,6 +24,7 @@ import MessagingApp from '../features/messaging/pages/MessagingApp';
 import { CalendarApp } from '../features/calendar/pages/CalendarApp';
 import ContactsApp from '../features/contacts/pages/ContactsApp';
 import ContactDetails from '../features/contacts/pages/ContactDetails';
+import WebsiteBuilder from '../features/website/pages/WebsiteBuilder';
 
 const ProtectedRoute = ({ allowedRoles, children }: { allowedRoles: Role[], children?: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -105,14 +106,15 @@ export const router = createBrowserRouter([
               { path: 'messaging', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><MessagingApp /></ProtectedRoute> },
               { path: 'calendar', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF', 'CLIENT']}><CalendarApp /></ProtectedRoute> },
               { path: 'contacts', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactsApp /></ProtectedRoute> },
-              { path: 'contacts/:id', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactDetails /></ProtectedRoute> }
+              { path: 'contacts/:id', element: <ProtectedRoute allowedRoles={['ORG_ADMIN', 'STAFF']}><ContactDetails /></ProtectedRoute> },
+              { path: 'website', element: <ProtectedRoute allowedRoles={['ORG_ADMIN']}><WebsiteBuilder /></ProtectedRoute> }
             ]
           }
         ],
       },
       {
         path: '*',
-        element: <Navigate to="/" replace />
+        element: <LandingPage />
       }
     ]
   }

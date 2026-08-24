@@ -10,4 +10,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    host: true, // Listen on all local IPs
+    allowedHosts: true, // Allow subdomain routing (e.g., thejunior.localhost)
+  }
 });

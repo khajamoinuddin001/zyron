@@ -531,6 +531,7 @@ a {
   flex-direction: column;
   transition: transform 0.3s ease;
   z-index: 50;
+  position: relative;
 }
 
 @media (max-width: 1200px) {

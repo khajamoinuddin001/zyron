@@ -1,9 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, CreditCard, MessageSquare, BookOpen, Settings, LogOut, Shield, FileText, AlertTriangle, X, Menu, Calendar, Award, Store, Package } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, MessageSquare, BookOpen, Settings, LogOut, Shield, FileText, AlertTriangle, X, Menu, Calendar, Award, Store, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { api } from '../services/api';
 import { applyTheme } from '../features/settings/pages/OrgSettings';
+
+const SidebarText = ({ show, children }: { show: boolean, children: React.ReactNode }) => (
+  <span style={{ 
+    opacity: show ? 1 : 0, 
+    maxWidth: show ? '200px' : 0,
+    overflow: 'hidden', 
+    whiteSpace: 'nowrap', 
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' 
+  }}>
+    {children}
+  </span>
+);
+
+const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, onClick }: any) => (
+  <Link 
+    to={to} 
+    onClick={onClick}
+    className={`btn btn-outline ${isActive ? 'active' : ''}`} 
+    style={{ 
+      justifyContent: isCollapsed ? 'center' : 'flex-start', 
+      border: 'none', 
+      padding: isCollapsed ? '0.75rem 0' : '0.5rem 1rem',
+      gap: isCollapsed ? 0 : '0.75rem',
+      background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
+      color: isActive ? 'var(--primary)' : 'var(--text-main)',
+      width: '100%',
+      transition: 'all 0.2s ease'
+    }}
+  >
+    <Icon size={22} style={{ flexShrink: 0, color: isActive ? 'var(--primary)' : 'var(--text-muted)' }} />
+    <SidebarText show={!isCollapsed}>{label}</SidebarText>
+  </Link>
+);
 
 const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +51,9 @@ const DashboardLayout: React.FC = () => {
 
   // Mobile Drawer State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Desktop Sidebar Collapse State
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Apply saved org theme on mount
   useEffect(() => {
@@ -92,9 +128,45 @@ const DashboardLayout: React.FC = () => {
       ></div>
 
       {/* Sidebar */}
-      <aside className={`sidebar-container ${isDrawerOpen ? 'open' : ''}`} style={{ maxHeight: '100vh' }}>
+      <aside 
+        className={`sidebar-container ${isDrawerOpen ? 'open' : ''} ${isSidebarCollapsed ? 'collapsed' : ''}`} 
+        style={{ 
+          maxHeight: '100vh', 
+          width: isSidebarCollapsed ? '80px' : '260px', 
+          padding: isSidebarCollapsed ? '1.5rem 0.5rem' : '1.5rem',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
+        
+        {/* Collapse Button */}
+        <button 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="hide-mobile"
+          style={{
+            position: 'absolute', top: '2rem', right: '-14px', zIndex: 10,
+            width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'var(--bg-card)', 
+            border: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'var(--text-main)',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.05)', 
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isSidebarCollapsed ? 'rotate(180deg)' : 'rotate(0deg)'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--primary)';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.borderColor = 'var(--primary)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--bg-card)';
+            e.currentTarget.style.color = 'var(--text-main)';
+            e.currentTarget.style.borderColor = 'var(--border-light)';
+          }}
+        >
+          <ChevronLeft size={16} strokeWidth={2.5} />
+        </button>
+
         {/* Logo / Org Name */}
-        <Link to="/dashboard" className="logo" style={{ marginBottom: '1.5rem', flexShrink: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
+        <Link to="/dashboard" className="logo" style={{ marginBottom: '1.5rem', flexShrink: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start' }}>
           {user?.organization?.logoUrl ? (
             <img src={user.organization.logoUrl} alt="org" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
           ) : (
@@ -102,94 +174,63 @@ const DashboardLayout: React.FC = () => {
               <span style={{ color: 'white', fontWeight: 700, fontSize: '1rem' }}>{(user?.organization?.name || 'O')[0].toUpperCase()}</span>
             </div>
           )}
-          <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {user?.organization?.name || 'My Organization'}
-          </span>
+          {!isSidebarCollapsed && (
+            <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user?.organization?.name || 'My Organization'}
+            </span>
+          )}
         </Link>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, overflowY: 'auto', paddingRight: '0.5rem', paddingBottom: '1rem' }}>
-          <Link to="/dashboard" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none', background: 'rgba(255,255,255,0.05)' }}>
-            <LayoutDashboard size={20} /> Dashboard
-          </Link>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, overflowY: 'auto', paddingRight: isSidebarCollapsed ? '0' : '0.5rem', paddingBottom: '1rem', overflowX: 'hidden' }}>
+          <SidebarLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" isActive={location.pathname === '/dashboard'} isCollapsed={isSidebarCollapsed} />
 
           {user?.activeModules?.includes('attendance') && (
-            <Link to="/dashboard/attendance" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
-              <BookOpen size={20} /> Attendance
-            </Link>
+            <SidebarLink to="/dashboard/attendance" icon={BookOpen} label="Attendance" isActive={location.pathname.startsWith('/dashboard/attendance')} isCollapsed={isSidebarCollapsed} />
           )}
 
           {user?.activeModules?.includes('messaging') && (
-            <Link to="/dashboard/messaging" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
-              <MessageSquare size={20} /> Messaging
-            </Link>
+            <SidebarLink to="/dashboard/messaging" icon={MessageSquare} label="Messaging" isActive={location.pathname.startsWith('/dashboard/messaging')} isCollapsed={isSidebarCollapsed} />
           )}
 
           {user?.activeModules?.includes('accounts') && (
-            <Link to="/dashboard" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
-              <FileText size={20} /> Accounts
-            </Link>
+            <SidebarLink to="/dashboard/accounts" icon={FileText} label="Accounts" isActive={location.pathname.startsWith('/dashboard/accounts')} isCollapsed={isSidebarCollapsed} />
           )}
 
           {user?.activeModules?.includes('calendar') && (
-            <Link to="/dashboard/calendar" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
-              <Calendar size={20} /> Calendar
-            </Link>
+            <SidebarLink to="/dashboard/calendar" icon={Calendar} label="Calendar" isActive={location.pathname.startsWith('/dashboard/calendar')} isCollapsed={isSidebarCollapsed} />
           )}
 
           {user?.activeModules?.includes('contacts') && (
-            <Link to="/dashboard/contacts" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>
-              <Users size={20} /> Contacts
-            </Link>
+            <SidebarLink to="/dashboard/contacts" icon={Users} label="Contacts" isActive={location.pathname.startsWith('/dashboard/contacts')} isCollapsed={isSidebarCollapsed} />
           )}
 
-          <Link to="/dashboard/apps" className={`btn btn-outline ${location.pathname === '/dashboard/apps' ? 'active' : ''}`} style={{ justifyContent: 'flex-start', border: 'none', color: location.pathname === '/dashboard/apps' ? 'var(--primary)' : 'inherit' }}>
-            <Package size={20} /> App
-          </Link>
+          <SidebarLink to="/dashboard/apps" icon={Package} label="Apps" isActive={location.pathname.startsWith('/dashboard/apps')} isCollapsed={isSidebarCollapsed} />
 
-
-          <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             {user?.isSuperAdmin && (
-              <Link to="/admin" className="btn btn-outline" style={{ justifyContent: 'flex-start', border: 'none' }}>Switch to Super Admin</Link>
+              <SidebarLink to="/admin" icon={Shield} label="Super Admin" isCollapsed={isSidebarCollapsed} />
             )}
 
             {user?.role === 'ORG_ADMIN' && (
               <>
-                <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem', padding: '0 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 600 }}>Settings</div>
-                <Link
-                  to="/dashboard/team-roles"
-                  className={`btn btn-outline ${location.pathname === '/dashboard/team-roles' ? 'active' : ''}`}
-                  style={{ justifyContent: 'flex-start', border: 'none', color: location.pathname === '/dashboard/team-roles' ? 'var(--primary)' : 'inherit' }}
-                >
-                  <Shield size={20} /> Team & Roles
-                </Link>
-                <Link
-                  to="/dashboard/settings"
-                  className={`btn btn-outline ${location.pathname === '/dashboard/settings' ? 'active' : ''}`}
-                  style={{ justifyContent: 'flex-start', border: 'none', color: location.pathname === '/dashboard/settings' ? 'var(--primary)' : 'inherit' }}
-                >
-                  <Award size={26} /> Organization Settings
-                </Link>
+                <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem', padding: '0 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 600, opacity: isSidebarCollapsed ? 0 : 1, transition: 'opacity 0.2s', height: isSidebarCollapsed ? 0 : 'auto', overflow: 'hidden' }}>Settings</div>
+                <SidebarLink to="/dashboard/team-roles" icon={Shield} label="Team & Roles" isActive={location.pathname === '/dashboard/team-roles'} isCollapsed={isSidebarCollapsed} />
+                <SidebarLink to="/dashboard/settings" icon={Award} label="Org Settings" isActive={location.pathname === '/dashboard/settings'} isCollapsed={isSidebarCollapsed} />
               </>
             )}
 
-            <div style={{ marginTop: user?.role === 'ORG_ADMIN' ? '0' : '0.5rem', marginBottom: '0.5rem', padding: '0 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 600 }}>Account</div>
-            <Link
-              to="/dashboard/profile"
-              className={`btn btn-outline ${location.pathname === '/dashboard/profile' ? 'active' : ''}`}
-              style={{ justifyContent: 'flex-start', border: 'none', color: location.pathname === '/dashboard/profile' ? 'var(--primary)' : 'inherit' }}
-            >
-              <Settings size={20} /> My Profile
-            </Link>
+            <div style={{ marginTop: user?.role === 'ORG_ADMIN' ? '0' : '0.5rem', marginBottom: '0.5rem', padding: '0 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 600, opacity: isSidebarCollapsed ? 0 : 1, transition: 'opacity 0.2s', height: isSidebarCollapsed ? 0 : 'auto', overflow: 'hidden' }}>Account</div>
+            <SidebarLink to="/dashboard/profile" icon={Settings} label="My Profile" isActive={location.pathname === '/dashboard/profile'} isCollapsed={isSidebarCollapsed} />
           </div>
         </nav>
 
-        <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border-light)', marginTop: '0', flexShrink: 0 }}>
-          <div style={{ marginBottom: '1rem' }}>
+        <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border-light)', marginTop: '0', flexShrink: 0, overflow: 'hidden', height: isSidebarCollapsed ? '60px' : 'auto' }}>
+          <div style={{ marginBottom: '1rem', opacity: isSidebarCollapsed ? 0 : 1, transition: 'opacity 0.2s ease', display: isSidebarCollapsed ? 'none' : 'block' }}>
             <p style={{ fontSize: '0.85rem', marginBottom: '0.2rem', color: 'var(--text-muted)' }}>Logged in as</p>
             <p style={{ color: 'var(--text-main)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.firstName} {user?.lastName}</p>
           </div>
-          <button onClick={handleLogout} className="btn btn-outline" style={{ width: '100%', justifyContent: 'flex-start', border: 'none', color: 'var(--text-muted)' }}>
-            <LogOut size={20} /> Log Out
+          <button onClick={handleLogout} className="btn btn-outline" style={{ width: '100%', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start', border: 'none', color: 'var(--text-muted)', padding: isSidebarCollapsed ? '0.75rem 0' : '0.5rem 1rem', gap: isSidebarCollapsed ? 0 : '0.75rem' }}>
+            <LogOut size={22} style={{ flexShrink: 0 }} /> <SidebarText show={!isSidebarCollapsed}>Log Out</SidebarText>
           </button>
         </div>
       </aside>

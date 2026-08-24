@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Mail, Lock, ArrowRight, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../../../store/auth.store';
+import { useBrandingStore } from '../../../store/branding.store';
 import { loginApi } from '../../../services/auth.service';
 
 const Login: React.FC = () => {
@@ -12,6 +13,10 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const { name: brandName, logoUrl: brandLogo, theme: brandTheme, isLoading: brandLoading } = useBrandingStore();
+
+  const brandColor = brandTheme ? 'var(--brand-primary, #7c3aed)' : '#7c3aed';
+  const brandBg = brandTheme ? 'var(--brand-bg, #f3efff)' : '#f3efff';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,12 +55,14 @@ const Login: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc' }}>
-      <div style={{ width: '100%', maxWidth: '440px', padding: '3.5rem 2.5rem', backgroundColor: '#ffffff', borderRadius: '24px', boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.05)', border: '1px solid rgba(0,0,0,0.05)', zIndex: 1 }}>
+      <div style={{ width: '100%', maxWidth: '440px', padding: '3.5rem 2.5rem', backgroundColor: '#ffffff', borderRadius: '24px', boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.05)', border: '1px solid rgba(0,0,0,0.05)', zIndex: 1, opacity: brandLoading ? 0 : 1, transition: 'opacity 0.3s' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f3efff', color: '#7c3aed', marginBottom: '1.25rem' }}>
-            <ShieldCheck size={32} />
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', backgroundColor: brandLogo ? 'transparent' : brandBg, color: brandColor, marginBottom: '1.25rem' }}>
+            {brandLogo ? <img src={brandLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <ShieldCheck size={32} />}
           </div>
-          <h2 style={{ fontSize: '1.85rem', marginBottom: '0.5rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.02em' }}>Welcome back</h2>
+          <h2 style={{ fontSize: '1.85rem', marginBottom: '0.5rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.02em' }}>
+            {brandName ? `Welcome to ${brandName}` : 'Welcome back'}
+          </h2>
           <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Enter your credentials to access your account.</p>
         </div>
 
@@ -145,7 +152,7 @@ const Login: React.FC = () => {
               alignItems: 'center', 
               justifyContent: 'center', 
               gap: '0.5rem',
-              backgroundColor: '#8b5cf6',
+              backgroundColor: brandColor,
               color: 'white',
               border: 'none',
               padding: '0.85rem 1.5rem',
@@ -153,7 +160,7 @@ const Login: React.FC = () => {
               fontSize: '1rem',
               fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(139, 92, 246, 0.4)',
+              boxShadow: `0 4px 14px ${brandColor}66`,
               transition: 'all 0.2s ease'
             }}
             disabled={loading}
@@ -166,7 +173,7 @@ const Login: React.FC = () => {
           </button>
           
           <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.9rem', color: '#64748b' }}>
-            Don't have an account? <Link to="/register" style={{ color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>Register here</Link>
+            Don't have an account? <Link to="/register" style={{ color: brandColor, textDecoration: 'none', fontWeight: 600 }}>Register here</Link>
           </div>
         </form>
 
